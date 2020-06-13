@@ -1,0 +1,52 @@
+version: '3.7'
+
+services:
+  n8n:
+    image: n8nio/n8n:0.69.1
+    command: /bin/sh -c "sleep 5; n8n start"
+    user: root
+    environment:
+      - DB_TYPE=mongodb
+      - DB_MONGODB_CONNECTION_URL=mongodb://mongo:27017/n8n
+      - NODE_ENV=production
+      - N8N_PROTOCOL=${SCHEME:-http}
+      - N8N_HOST=${DOMAIN:-n8n.localhost}
+      - WEBHOOK_TUNNEL_URL=${SCHEME:-http}://${DOMAIN:-n8n.localhost}/
+      - VUE_APP_URL_BASE_API=${SCHEME:-http}://${DOMAIN:-n8n.localhost}/
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD:-myp@ssw0rd}
+    volumes:
+      - ${VOLUME_PATH}n8n:/root/.n8n
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.n8n-${NUMBER:-1}.rule=Host(`${DOMAIN:-n8n.localhost}`)
+        - traefik.http.routers.n8n-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.n8n-${NUMBER:-1}.service=n8n-${NUMBER:-1}
+        - traefik.http.routers.n8n-${NUMBER:-1}.middlewares=n8n-${NUMBER:-1}
+        - traefik.http.services.n8n-${NUMBER:-1}.loadbalancer.server.port=5678
+        - traefik.http.middlewares.n8n-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Port=443
+        - traefik.http.middlewares.n8n-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Proto=${SCHEME:-http}
+    networks:
+      - traefik
+      - internal
+
+  mongo:
+    image: mongo:4.0.3
+    volumes:
+      - ${VOLUME_PATH}mongo:/data/db
+    networks:
+      - internal
+
+volumes:
+  n8n:
+  mongo:
+
+networks:
+  internal:
+    driver: overlay
+    attachable: true
+  traefik:
+    external: true
+    name: traefik-net
