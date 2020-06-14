@@ -16,13 +16,20 @@ services:
       - ${VOLUME_PATH}nextcloud:/var/www/html:cached
     deploy:
       labels:
-        traefik.enable: "true"
-        traefik.port: 80
-        traefik.frontend.rule: Host:${DOMAIN:-nextcloud.localhost}
-        traefik.frontend.headers.customResponseHeaders: "X-Frame-Options: SAMEORIGIN||Strict-Transport-Security: max-age=31536000||Referrer-Policy: no-referrer"
-        traefik.frontend.redirect.permanent: "true"
-        traefik.frontend.redirect.regex: https://(.*)/.well-known/(card|cal)dav
-        traefik.frontend.redirect.replacement: https://$$1/remote.php/dav/
+        - traefik.enable=true
+        - traefik.http.routers.nextcloud-${NUMBER:-1}.rule=Host(`${DOMAIN:-nextcloud.localhost}`)
+        - traefik.http.routers.nextcloud-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.nextcloud-${NUMBER:-1}.service=nextcloud-${NUMBER:-1}
+        - traefik.http.routers.nextcloud-${NUMBER:-1}.middlewares=nextcloud-${NUMBER:-1}
+        - traefik.http.services.nextcloud-${NUMBER:-1}.loadbalancer.server.port=80
+        - traefik.http.middlewares.nextcloud-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Port=443
+        - traefik.http.middlewares.nextcloud-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Proto=${SCHEME:-http}
+        - traefik.http.middlewares.nextcloud-${NUMBER:-1}.headers.customResponseHeaders.Referrer-Policy=no-referrer
+        - traefik.http.middlewares.nextcloud-${NUMBER:-1}.headers.customResponseHeaders.Strict-Transport-Security=max-age=31536000
+        - traefik.http.middlewares.nextcloud-${NUMBER:-1}.headers.customResponseHeaders.X-Frame-Options=SAMEORIGIN
+        - traefik.http.middlewares.nextcloud-redirect-${NUMBER:-1}.redirectregex.regex=https://(.*)/.well-known/(card|cal)dav
+        - traefik.http.middlewares.nextcloud-redirect-${NUMBER:-1}.redirectregex.replacement=https://$$1/remote.php/dav/
+        - traefik.http.middlewares.nextcloud-redirect-${NUMBER:-1}.redirectregex.permanent=true
     networks:
       - internal
       - traefik
@@ -49,6 +56,7 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-myp@ssw0rd}
       - NEXTCLOUD_TRUSTED_DOMAINS=${DOMAIN:-nextcloud.localhost} nginx ${TRUSTED_DOMAINS}
       - NEXTCLOUD_UPDATE=${NEXTCLOUD_UPDATE:-1}
+      - FORCE_LANGUAGE=${FORCE_LOCALE:-fr}
       - ENABLE_S3=${ENABLE_S3:-false}
       - S3_BUCKET=${S3_BUCKET}
       - S3_KEY=${S3_KEY}
