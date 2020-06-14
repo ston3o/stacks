@@ -1,6 +1,17 @@
 version: "3.7"
 
 services:
+  init:
+    image: alpine:latest
+    command: chown -R 2000:2000 /mattermost
+    volumes:
+      - ${VOLUME_PATH}data:/mattermost/data
+      - ${VOLUME_PATH}config:/mattermost/config
+      - ${VOLUME_PATH}plugins:/mattermost/plugins
+    deploy:
+      restart_policy:
+        condition: on-failure
+
   app:
     image: mattermost/mattermost-prod-app:${VERSION:-5.23.1}
     volumes:
