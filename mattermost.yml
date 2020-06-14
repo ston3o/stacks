@@ -10,6 +10,7 @@ services:
     environment:
       - MM_USERNAME=mattermost
       - MM_PASSWORD=myp@ssw0rd
+      - DB_HOST=postgres
       - MM_DBNAME=mattermost
       - MM_SERVICESETTINGS_SITEURL=${SCHEME:-http}://${DOMAIN:-mattermost.localhost}
       - MM_LOCALIZATIONSETTINGS_DEFAULTCLIENTLOCALE=${LOCALE:-fr}
@@ -40,7 +41,7 @@ services:
       - internal
       - traefik
 
-  db:
+  postgres:
     image: postgres:9.6-alpine
     volumes:
       - ${VOLUME_PATH}db:/var/lib/postgresql/data

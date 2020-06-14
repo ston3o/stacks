@@ -8,9 +8,14 @@ services:
       - ${VOLUME_PATH}plugins:/var/www/app/plugins
     deploy:
       labels:
-        - traefik.port=80
         - traefik.enable=true
-        - traefik.frontend.rule=Host:${DOMAIN:-kanboard.localhost}
+        - traefik.http.routers.kanboard-${NUMBER:-1}.rule=Host(`${DOMAIN:-kanboard.localhost}`)
+        - traefik.http.routers.kanboard-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.kanboard-${NUMBER:-1}.service=kanboard-${NUMBER:-1}
+        - traefik.http.routers.kanboard-${NUMBER:-1}.middlewares=kanboard-${NUMBER:-1}
+        - traefik.http.services.kanboard-${NUMBER:-1}.loadbalancer.server.port=80
+        - traefik.http.middlewares.kanboard-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Port=443
+        - traefik.http.middlewares.kanboard-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Proto=${SCHEME:-http}
       resources:
         limits:
           memory: 200M

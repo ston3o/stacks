@@ -18,9 +18,14 @@ services:
       - ${VOLUME_PATH}fathom:/app
     deploy:
       labels:
-        - traefik.port=8080
-        - traefik.frontend.rule=Host:${DOMAIN:-fathom.localhost}
         - traefik.enable=true
+        - traefik.http.routers.fathom-${NUMBER:-1}.rule=Host(`${DOMAIN:-fathom.localhost}`)
+        - traefik.http.routers.fathom-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.fathom-${NUMBER:-1}.service=fathom-${NUMBER:-1}
+        - traefik.http.routers.fathom-${NUMBER:-1}.middlewares=fathom-${NUMBER:-1}
+        - traefik.http.services.fathom-${NUMBER:-1}.loadbalancer.server.port=8080
+        - traefik.http.middlewares.fathom-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Port=443
+        - traefik.http.middlewares.fathom-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Proto=${SCHEME:-http}
     networks:
       - traefik
 
