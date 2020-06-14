@@ -20,11 +20,6 @@ services:
         - traefik.http.services.rocketchat-${NUMBER:-1}.loadbalancer.server.port=3000
         - traefik.http.middlewares.rocketchat-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Port=443
         - traefik.http.middlewares.rocketchat-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Proto=${SCHEME:-http}
-      resources:
-        limits:
-          memory: 500M
-        reservations:
-          memory: 500M
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
       interval: 1m30s

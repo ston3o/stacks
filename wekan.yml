@@ -10,8 +10,6 @@ services:
     deploy:
       labels:
         - traefik.enable=true
-        - traefik.frontend.rule=Host:${DOMAIN:-wekan.localhost}
-        - traefik.enable=true
         - traefik.http.routers.wekan-${NUMBER:-1}.rule=Host(`${DOMAIN:-wekan.localhost}`)
         - traefik.http.routers.wekan-${NUMBER:-1}.entrypoints=${SCHEME:-http}
         - traefik.http.routers.wekan-${NUMBER:-1}.service=wekan-${NUMBER:-1}
