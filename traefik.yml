@@ -15,6 +15,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
       - { target: 80, published: 80, mode: host, protocol: tcp }
+    deploy:
+      mode: ${MODE:-replicated}
+      placement:
+        constraints: [node.role==manager]
 
 networks:
   default:
