@@ -16,9 +16,9 @@ services:
       - --entrypoints.http.http.redirections.entryPoint.scheme=https
       - --entrypoints.http.http.redirections.entrypoint.permanent=true
       - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
-      - --certificatesresolvers.letsencrypt.acme.email=noreply@ethibox.fr
+      - --certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:-noreply@ethibox.fr}
       - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
-      # - --certificatesresolvers.letsencryptresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      # - --certificatesresolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
     volumes:
       - ${VOLUME_PATH}letsencrypt:/letsencrypt
       - /var/run/docker.sock:/var/run/docker.sock:ro
