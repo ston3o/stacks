@@ -2,20 +2,25 @@ version: '3.8'
 
 services:
   traefik:
-    image: traefik:${VERSION:-v2.2.1}
+    image: traefik:${VERSION:-v2.2.5}
     command:
-      - --log.level=DEBUG
+      # - --log.level=DEBUG
       - --providers.docker
       - --providers.docker.network=traefik-net
       - --providers.docker.exposedByDefault=false
       - --providers.docker.swarmMode=true
       - --providers.docker.endpoint=unix:///var/run/docker.sock
       - --entrypoints.http.address=:80
+      - --entrypoints.https.address=:443
       - --entrypoints.http.http.redirections.entryPoint.to=https
       - --entrypoints.http.http.redirections.entryPoint.scheme=https
       - --entrypoints.http.http.redirections.entrypoint.permanent=true
-      - --entrypoints.https.address=:443
+      - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
+      - --certificatesresolvers.letsencrypt.acme.email=noreply@ethibox.fr
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      # - --certificatesresolvers.letsencryptresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
     volumes:
+      - ${VOLUME_PATH}letsencrypt:/letsencrypt
       - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
       - { target: 80, published: 80, mode: host, protocol: tcp }
@@ -24,6 +29,9 @@ services:
       mode: ${MODE:-replicated}
       placement:
         constraints: [node.role==manager]
+
+volumes:
+  letsencrypt:
 
 networks:
   default:
