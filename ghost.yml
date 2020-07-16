@@ -22,6 +22,7 @@ services:
         - traefik.http.routers.ghost-${NUMBER:-1}.entrypoints=${SCHEME:-http}
         - traefik.http.routers.ghost-${NUMBER:-1}.service=ghost-${NUMBER:-1}
         - traefik.http.routers.ghost-${NUMBER:-1}.middlewares=ghost-${NUMBER:-1}
+        - traefik.http.routers.ghost-${NUMBER:-1}.tls.certresolver=letsencrypt
         - traefik.http.services.ghost-${NUMBER:-1}.loadbalancer.server.port=2368
         - traefik.http.middlewares.ghost-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Port=443
         - traefik.http.middlewares.ghost-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Proto=${SCHEME:-http}
