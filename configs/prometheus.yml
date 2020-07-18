@@ -1,21 +1,8 @@
 global:
-  scrape_interval:     15s
-  evaluation_interval: 15s
-
-alerting:
-  alertmanagers:
-  - static_configs:
-    - targets:
-      - alertmanager:9093
-
-rule_files:
-  - alert.rules.yml
+  scrape_interval:     30s
+  evaluation_interval: 30s
 
 scrape_configs:
-  - job_name: traefik
-    static_configs:
-      - targets: ['traefik_traefik:8080']
-
   - job_name: prometheus
     metrics_path: /prometheus/metrics
     static_configs:
@@ -34,19 +21,3 @@ scrape_configs:
       - tasks.cadvisor
       type: A
       port: 8080
-
-  - job_name: blackbox-exporter
-    scrape_interval: 30s
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets: #targets
-        - https://ethibox.fr #domain
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter:9115

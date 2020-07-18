@@ -7,17 +7,11 @@ services:
       - /bin/sh
       - -c
       - |
+        chown -R 65534:root /prometheus
         wget --no-cache -q https://raw.githubusercontent.com/ethibox/stacks/master/configs/prometheus.yml -O /mnt/prometheus.yml
-        wget --no-cache -q https://raw.githubusercontent.com/ethibox/stacks/master/configs/alertmanager.yml -O /mnt/alertmanager.yml
-        wget --no-cache -q https://raw.githubusercontent.com/ethibox/stacks/master/configs/alert.rules.yml -O /mnt/alert.rules.yml
-        wget --no-cache -q https://raw.githubusercontent.com/ethibox/stacks/master/configs/blackbox.yml -O /mnt/blackbox.yml
-        sed -i -e 's/SMTP_HOST/'${SMTP_HOST:-mail.service.host:587}'/g' /mnt/alertmanager.yml
-        sed -i -e 's/SMTP_FROM/'${SMTP_FROM:-noreply@ethibox.fr}'/g' /mnt/alertmanager.yml
-        sed -i -e 's/SMTP_USERNAME/'${SMTP_USERNAME:-noreply@ethibox.fr}'/g' /mnt/alertmanager.yml
-        sed -i -e 's/SMTP_PASSWORD/'${SMTP_PASSWORD:-myp@ssw0rd}'/g' /mnt/alertmanager.yml
-        sed -i -e 's/SMTP_TO/'${SMTP_TO:-noreply@ethibox.fr}'/g' /mnt/alertmanager.yml
     volumes:
       - ${VOLUME_PATH}config:/mnt
+      - ${VOLUME_PATH}prometheus:/prometheus
     deploy:
       restart_policy:
         condition: on-failure
@@ -31,21 +25,10 @@ services:
       - --web.console.libraries=/usr/share/prometheus/console_libraries
       - --web.console.templates=/usr/share/prometheus/consoles
       - --web.route-prefix=/prometheus
-      - --web.external-url=http://${DOMAIN:-monitoring.localhost}/prometheus
+      - --web.external-url=${SCHEME:-http}://${DOMAIN:-grafana.localhost}/prometheus
     volumes:
       - ${VOLUME_PATH}prometheus:/prometheus
       - ${VOLUME_PATH}config:/etc/prometheus/
-    deploy:
-      labels:
-        - traefik.port=9090
-        - traefik.enable=true
-        - traefik.frontend.rule=Host:${DOMAIN:-monitoring.localhost};PathPrefix:/prometheus
-        - traefik.frontend.auth.basic.users=admin:${HTPASSWD:?err}
-      resources:
-        limits:
-          memory: 400M
-        reservations:
-          memory: 350M
     networks:
       - internal
       - traefik
@@ -53,19 +36,29 @@ services:
   grafana:
     image: grafana/grafana:6.7.3
     user: root
+    environment:
+      - GF_SMTP_ENABLED=true
+      - GF_SMTP_FROM_ADDRESS=${SMTP_FROM:-noreply@ethibox.fr}
+      - GF_SMTP_HOST=${SMTP_HOST:-mail.service.host:587}
+      - GF_SMTP_PASSWORD=${SMTP_PASSWORD:-myp@ssw0rd}
+      - GF_SMTP_USER=${SMTP_USERNAME:-noreply@ethibox.fr}
     volumes:
       - ${VOLUME_PATH}grafana:/var/lib/grafana
     deploy:
       labels:
-        - traefik.port=3000
         - traefik.enable=true
-        - traefik.frontend.rule=Host:${DOMAIN:-monitoring.localhost}
+        - traefik.http.routers.grafana-${NUMBER:-1}.rule=Host(`${DOMAIN:-grafana.localhost}`)
+        - traefik.http.routers.grafana-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.grafana-${NUMBER:-1}.service=grafana-${NUMBER:-1}
+        - traefik.http.routers.grafana-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.grafana-${NUMBER:-1}.loadbalancer.server.port=3000
     networks:
       - internal
       - traefik
 
   cadvisor:
     image: gcr.io/google-containers/cadvisor:v0.36.0
+    command: -docker_only=true
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
@@ -73,29 +66,23 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
     deploy:
       mode: global
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 128M
-        reservations:
-          cpus: '0.1'
-          memory: 64M
     networks:
       - internal
       
   node-exporter:
-    image: stefanprodan/swarmprom-node-exporter:v0.16.0
+    image: prom/node-exporter:v1.0.1
+    hostname: "{{.Node.Hostname}}"
     volumes:
       - /sys:/host/sys:ro
       - /:/rootfs:ro
       - /proc:/host/proc:ro
-      - /etc/hostname:/etc/nodename
+      - /etc/hostname:/etc/hostname
     environment:
       - NODE_ID={{.Node.ID}}
     command:
+      # - '--collector.textfile.directory=/etc/node-exporter/'
       - '--path.sysfs=/host/sys'
       - '--path.procfs=/host/proc'
-      - '--collector.textfile.directory=/etc/node-exporter/'
       - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
       - '--no-collector.ipvs'
     deploy:
@@ -105,22 +92,6 @@ services:
           memory: 128M
         reservations:
           memory: 64M
-    networks:
-      - internal
-
-  alertmanager:
-    image: prom/alertmanager:v0.16.1
-    command: --config.file=/etc/alertmanager/alertmanager.yml
-    volumes:
-      - ${VOLUME_PATH}config:/etc/alertmanager/
-    networks:
-      - internal
-
-  blackbox-exporter:
-    image: prom/blackbox-exporter:v0.14.0
-    command: --config.file=/config/blackbox.yml
-    volumes:
-      - ${VOLUME_PATH}config:/config
     networks:
       - internal
 
