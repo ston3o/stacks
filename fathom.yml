@@ -5,7 +5,7 @@ version: '3.7'
 services:
   init:
     image: usefathom/fathom:${VERSION:-latest}
-    command: cp -r /app/fathom /mnt/
+    command: cp /app/fathom /mnt/
     volumes:
       - ${VOLUME_PATH}fathom:/mnt
     deploy:
@@ -22,10 +22,8 @@ services:
         - traefik.http.routers.fathom-${NUMBER:-1}.rule=Host(`${DOMAIN:-fathom.localhost}`)
         - traefik.http.routers.fathom-${NUMBER:-1}.entrypoints=${SCHEME:-http}
         - traefik.http.routers.fathom-${NUMBER:-1}.service=fathom-${NUMBER:-1}
-        - traefik.http.routers.fathom-${NUMBER:-1}.middlewares=fathom-${NUMBER:-1}
+        - traefik.http.routers.fathom-${NUMBER:-1}.tls.certresolver=letsencrypt
         - traefik.http.services.fathom-${NUMBER:-1}.loadbalancer.server.port=8080
-        - traefik.http.middlewares.fathom-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Port=443
-        - traefik.http.middlewares.fathom-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Proto=${SCHEME:-http}
     networks:
       - traefik
 
