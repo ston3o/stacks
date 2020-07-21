@@ -20,16 +20,19 @@ services:
       - ${VOLUME_PATH}data:/var/www/app/public
     deploy:
       labels:
-        - traefik.port=80
         - traefik.enable=true
-        - traefik.frontend.rule=Host:${DOMAIN:-invoiceninja.localhost}
+        - traefik.http.routers.invoiceninja-${NUMBER:-1}.rule=Host(`${DOMAIN:-invoiceninja.localhost}`)
+        - traefik.http.routers.invoiceninja-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.invoiceninja-${NUMBER:-1}.service=invoiceninja-${NUMBER:-1}
+        - traefik.http.routers.invoiceninja-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.invoiceninja-${NUMBER:-1}.loadbalancer.server.port=80
     networks:
       - internal
       - traefik
 
   app:
     image: invoiceninja/invoiceninja:${VERSION:-alpine-4.5.18}
-    command: /bin/sh -c "chown -R www-data:www-data /var/www/app/ && php-fpm"
+    command: /bin/sh -c "chown -R 1000:101 /var/www/app/ && php-fpm"
     volumes:
       - ${VOLUME_PATH}storage:/var/www/app/storage
       - ${VOLUME_PATH}data:/var/www/app/public

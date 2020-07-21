@@ -1,9 +1,16 @@
+# su -m -c "/var/www/passbolt/bin/cake passbolt register_user -u your@email.com -f firstname -l lastname -r admin" -s /bin/sh www-data
+
 version: '3.7'
 
 services:
   passbolt:
-    image: passbolt/passbolt:${VERSION:-2.12.1-debian}
-    command: ["/usr/bin/wait-for.sh", "-t", "0", "mariadb:3306", "--", "/docker-entrypoint.sh"]
+    image: passbolt/passbolt:${VERSION:-2.13.1-debian}
+    command:
+      - /bin/sh
+      - -c
+      - |
+        chown -R 33:33 /var/www/passbolt/
+        /usr/bin/wait-for.sh -t 0 mariadb:3306 -- /docker-entrypoint.sh
     environment:
       - APP_FULL_BASE_URL=${SCHEME:-http}://${DOMAIN:-passbolt.localhost}
       - DATASOURCES_DEFAULT_HOST=mariadb
@@ -18,9 +25,12 @@ services:
       - ${VOLUME_PATH}images:/var/www/passbolt/webroot/img/public
     deploy:
       labels:
-        - traefik.port=80
         - traefik.enable=true
-        - traefik.frontend.rule=Host:${DOMAIN:-passbolt.localhost}
+        - traefik.http.routers.passbolt-${NUMBER:-1}.rule=Host(`${DOMAIN:-passbolt.localhost}`)
+        - traefik.http.routers.passbolt-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.passbolt-${NUMBER:-1}.service=passbolt-${NUMBER:-1}
+        - traefik.http.routers.passbolt-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.passbolt-${NUMBER:-1}.loadbalancer.server.port=80
     networks:
       - internal
       - traefik
