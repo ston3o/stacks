@@ -1,0 +1,18 @@
+version: '3.7'
+
+services:
+  web:
+    image: ${IMAGE:-nginx:alpine}
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.waiting-${NUMBER:-1}.rule=Host(`${DOMAIN:-waiting.localhost}`)
+        - traefik.http.routers.waiting-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.waiting-${NUMBER:-1}.service=waiting-${NUMBER:-1}
+        - traefik.http.routers.waiting-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.waiting-${NUMBER:-1}.loadbalancer.server.port=${PORT:-80}
+
+networks:
+  default:
+    external: true
+    name: traefik-net
