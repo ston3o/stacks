@@ -1,12 +1,19 @@
 version: '3.7'
 
 services:
-  web:
+  waiting:
     image: ${IMAGE:-nginx:alpine}
+    command:
+      - /bin/sh
+      - -c
+      - |
+        wget -O /usr/share/nginx/html/index.html https://raw.githubusercontent.com/johackim/stacks/v2/configs/waiting.html
+        nginx -g 'daemon off;'
     deploy:
       labels:
         - traefik.enable=true
         - traefik.http.routers.waiting-${NUMBER:-1}.rule=Host(`${DOMAIN:-waiting.localhost}`)
+        - traefik.http.routers.waiting-${NUMBER:-1}.priority=0
         - traefik.http.routers.waiting-${NUMBER:-1}.entrypoints=${SCHEME:-http}
         - traefik.http.routers.waiting-${NUMBER:-1}.service=waiting-${NUMBER:-1}
         - traefik.http.routers.waiting-${NUMBER:-1}.tls.certresolver=letsencrypt
