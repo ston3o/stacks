@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   web:
-    image: ghost:${VERSION:-3.18.1-alpine}
+    image: ghost:${VERSION:-3.28.0-alpine}
     volumes:
       - ${VOLUME_PATH}ghost:/var/lib/ghost/content
     environment:
@@ -21,11 +21,8 @@ services:
         - traefik.http.routers.ghost-${NUMBER:-1}.rule=Host(`${DOMAIN:-ghost.localhost}`)
         - traefik.http.routers.ghost-${NUMBER:-1}.entrypoints=${SCHEME:-http}
         - traefik.http.routers.ghost-${NUMBER:-1}.service=ghost-${NUMBER:-1}
-        - traefik.http.routers.ghost-${NUMBER:-1}.middlewares=ghost-${NUMBER:-1}
         - traefik.http.routers.ghost-${NUMBER:-1}.tls.certresolver=letsencrypt
         - traefik.http.services.ghost-${NUMBER:-1}.loadbalancer.server.port=2368
-        - traefik.http.middlewares.ghost-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Port=443
-        - traefik.http.middlewares.ghost-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Proto=${SCHEME:-http}
 
 volumes:
   ghost:
