@@ -10,9 +10,12 @@ services:
       - DOCKER_MODS=linuxserver/calibre-web:calibre
     deploy:
       labels:
-        - traefik.port=8083
         - traefik.enable=true
-        - traefik.frontend.rule=Host:${DOMAIN:-calibre.localhost}
+        - traefik.http.routers.calibre-${NUMBER:-1}.rule=Host(`${DOMAIN:-calibre.localhost}`)
+        - traefik.http.routers.calibre-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.calibre-${NUMBER:-1}.service=calibre-${NUMBER:-1}
+        - traefik.http.routers.calibre-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.calibre-${NUMBER:-1}.loadbalancer.server.port=8083
     volumes:
       - ${VOLUME_PATH}config:/config
       - ${VOLUME_PATH}books:/books
