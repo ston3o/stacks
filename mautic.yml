@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   mautic:
-    image: ethibox/mautic:${VERSION:-2.16.1}
+    image: ethibox/mautic:${VERSION:-2.16.2}
     volumes:
       - ${VOLUME_PATH}data:/var/www/html
     environment:
@@ -13,9 +13,12 @@ services:
       - MAUTIC_TRUSTED_PROXIES=0.0.0.0/0
     deploy:
       labels:
-        - traefik.port=80
-        - traefik.frontend.rule=Host:${DOMAIN:-mautic.localhost}
         - traefik.enable=true
+        - traefik.http.routers.mautic-${NUMBER:-1}.rule=Host(`${DOMAIN:-mautic.localhost}`)
+        - traefik.http.routers.mautic-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.mautic-${NUMBER:-1}.service=mautic-${NUMBER:-1}
+        - traefik.http.routers.mautic-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.mautic-${NUMBER:-1}.loadbalancer.server.port=80
     networks:
       - traefik
       - internal
