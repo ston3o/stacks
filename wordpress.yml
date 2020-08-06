@@ -19,16 +19,14 @@ services:
         - traefik.http.routers.wordpress-${NUMBER:-1}.rule=Host(`${DOMAIN:-wordpress.localhost}`)
         - traefik.http.routers.wordpress-${NUMBER:-1}.entrypoints=${SCHEME:-http}
         - traefik.http.routers.wordpress-${NUMBER:-1}.service=wordpress-${NUMBER:-1}
-        - traefik.http.routers.wordpress-${NUMBER:-1}.middlewares=wordpress-${NUMBER:-1}
+        - traefik.http.routers.wordpress-${NUMBER:-1}.tls.certresolver=letsencrypt
         - traefik.http.services.wordpress-${NUMBER:-1}.loadbalancer.server.port=80
-        - traefik.http.middlewares.wordpress-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Port=443
-        - traefik.http.middlewares.wordpress-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Proto=${SCHEME:-http}
     networks:
       - internal
       - traefik
 
   app:
-    image: wordpress:${VERSION:-5.4.1-fpm-alpine}
+    image: wordpress:${VERSION:-5.4.2-fpm-alpine}
     volumes:
       - ${VOLUME_PATH}wordpress:/var/www/html:cached
     environment:
