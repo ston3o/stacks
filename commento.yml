@@ -15,10 +15,12 @@ services:
       - COMMENTO_SMTP_FROM_ADDRESS=${COMMENTO_SMTP_FROM_ADDRESS:-noreply@ethibox.fr}
     deploy:
       labels:
-        - traefik.port=8080
         - traefik.enable=true
-        - traefik.frontend.passHostHeader=true
-        - traefik.frontend.rule=Host:${DOMAIN:-commento.localhost}
+        - traefik.http.routers.commento-${NUMBER:-1}.rule=Host(`${DOMAIN:-commento.localhost}`)
+        - traefik.http.routers.commento-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.commento-${NUMBER:-1}.service=commento-${NUMBER:-1}
+        - traefik.http.routers.commento-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.commento-${NUMBER:-1}.loadbalancer.server.port=8080
     networks:
       - internal
       - traefik
