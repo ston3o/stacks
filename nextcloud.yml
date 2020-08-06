@@ -20,22 +20,21 @@ services:
         - traefik.http.routers.nextcloud-${NUMBER:-1}.rule=Host(`${DOMAIN:-nextcloud.localhost}`)
         - traefik.http.routers.nextcloud-${NUMBER:-1}.entrypoints=${SCHEME:-http}
         - traefik.http.routers.nextcloud-${NUMBER:-1}.service=nextcloud-${NUMBER:-1}
-        - traefik.http.routers.nextcloud-${NUMBER:-1}.middlewares=nextcloud-${NUMBER:-1}
+        - traefik.http.routers.nextcloud-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.routers.nextcloud-${NUMBER:-1}.middlewares=nextcloud-${NUMBER:-1},nextcloud-${NUMBER:-1}-redirect
         - traefik.http.services.nextcloud-${NUMBER:-1}.loadbalancer.server.port=80
-        - traefik.http.middlewares.nextcloud-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Port=443
-        - traefik.http.middlewares.nextcloud-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Proto=${SCHEME:-http}
         - traefik.http.middlewares.nextcloud-${NUMBER:-1}.headers.customResponseHeaders.Referrer-Policy=no-referrer
         - traefik.http.middlewares.nextcloud-${NUMBER:-1}.headers.customResponseHeaders.Strict-Transport-Security=max-age=31536000
         - traefik.http.middlewares.nextcloud-${NUMBER:-1}.headers.customResponseHeaders.X-Frame-Options=SAMEORIGIN
-        - traefik.http.middlewares.nextcloud-redirect-${NUMBER:-1}.redirectregex.regex=https://(.*)/.well-known/(card|cal)dav
-        - traefik.http.middlewares.nextcloud-redirect-${NUMBER:-1}.redirectregex.replacement=https://$$1/remote.php/dav/
-        - traefik.http.middlewares.nextcloud-redirect-${NUMBER:-1}.redirectregex.permanent=true
+        - traefik.http.middlewares.nextcloud-${NUMBER:-1}-redirect.redirectregex.regex=/.well-known/(card|cal)dav
+        - traefik.http.middlewares.nextcloud-${NUMBER:-1}-redirect.redirectregex.replacement=/remote.php/dav/
+        - traefik.http.middlewares.nextcloud-${NUMBER:-1}-redirect.redirectregex.permanent=true
     networks:
       - internal
       - traefik
 
   app:
-    image: nextcloud:${VERSION:-18.0.4-fpm-alpine}
+    image: nextcloud:${VERSION:-19.0.1-fpm-alpine}
     command:
       - /bin/sh
       - -c
