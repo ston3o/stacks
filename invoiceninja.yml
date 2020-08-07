@@ -32,7 +32,7 @@ services:
 
   app:
     image: invoiceninja/invoiceninja:${VERSION:-alpine-4.5.18}
-    command: /bin/sh -c "chown -R 1000:101 /var/www/app/ && php-fpm"
+    command: /bin/sh -c "chown -R 1000:82 /var/www/app/ && php-fpm"
     volumes:
       - ${VOLUME_PATH}storage:/var/www/app/storage
       - ${VOLUME_PATH}data:/var/www/app/public
