@@ -53,22 +53,23 @@ services:
 
   web:
     <<: *defaults
-    image: tootsuite/mastodon:${VERSION:-v3.1.2}
+    image: tootsuite/mastodon:${VERSION:-v3.1.5}
     command: bash -c "rm -f /mastodon/tmp/pids/server.pid; bundle exec rake db:migrate; bundle exec rake assets:precompile; bundle exec rails s -p 3000"
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider --proxy=off localhost:3000/health || exit 1"]
     deploy:
       labels:
-        - traefik.port=3000
-        - traefik.frontend.rule=Host:${DOMAIN:-mastodon.localhost}
         - traefik.enable=true
+        - traefik.http.routers.mastodon-${NUMBER:-1}.rule=Host(`${DOMAIN:-mastodon.localhost}`)
+        - traefik.http.routers.mastodon-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.mastodon-${NUMBER:-1}.service=mastodon-${NUMBER:-1}
+        - traefik.http.routers.mastodon-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.mastodon-${NUMBER:-1}.loadbalancer.server.port=3000
       resources:
         limits:
           memory: 500M
         reservations:
           memory: 500M
-      placement:
-        constraints: [node.labels.reserved != true]
     volumes:
       - ${VOLUME_PATH}system:/mastodon/public/system
     networks:
@@ -77,7 +78,7 @@ services:
 
   streaming:
     <<: *defaults
-    image: tootsuite/mastodon:${VERSION:-v3.1.2}
+    image: tootsuite/mastodon:${VERSION:-v3.1.5}
     command: node ./streaming
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider --proxy=off localhost:4000/api/v1/streaming/health || exit 1"]
@@ -86,7 +87,7 @@ services:
 
   sidekiq:
     <<: *defaults
-    image: tootsuite/mastodon:${VERSION:-v3.1.2}
+    image: tootsuite/mastodon:${VERSION:-v3.1.5}
     command: bundle exec sidekiq
     volumes:
       - ${VOLUME_PATH}system:/mastodon/public/system
