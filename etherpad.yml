@@ -13,13 +13,11 @@ services:
     deploy:
       labels:
         - traefik.enable=true
-        - traefik.port=9001
-        - traefik.frontend.rule=Host:${DOMAIN:-etherpad.localhost}
-      resources:
-        limits:
-          memory: 100M
-        reservations:
-          memory: 100M
+        - traefik.http.routers.etherpad-${NUMBER:-1}.rule=Host(`${DOMAIN:-etherpad.localhost}`)
+        - traefik.http.routers.etherpad-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.etherpad-${NUMBER:-1}.service=etherpad-${NUMBER:-1}
+        - traefik.http.routers.etherpad-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.etherpad-${NUMBER:-1}.loadbalancer.server.port=9001
     networks:
       - traefik
       - internal
