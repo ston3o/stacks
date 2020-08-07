@@ -1,0 +1,62 @@
+# python3 /code/pytition/manage.py createsuperuser
+
+version: '3.7'
+
+services:
+  web:
+    image: ethibox/pytition
+    command:
+      - /bin/sh
+      - -c
+      - |
+        apt-get update && apt-get install -y netcat
+        while ! nc -z db 5432; do echo "waiting for postgres to start..." && sleep 1; done;
+        cp /code/pytition/pytition/settings/config_example.py /config/docker_config.py
+        touch /config/__init__.py
+        sed -i -e 's/localhost/'$$DOMAIN'/g' /config/docker_config.py
+        /code/dev/generate_docker_config.sh
+        python3 /code/pytition/manage.py migrate
+        python3 /code/pytition/manage.py collectstatic
+        python3 /code/pytition/manage.py compilemessages
+        python pytition/manage.py runserver 0.0.0.0:8000
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.docker_config
+      - PYTHONPATH=/
+      - DOMAIN=${DOMAIN:-pytition.localhost}
+    volumes:
+      - ${VOLUME_PATH}config:/config
+      - ${VOLUME_PATH}media:/mediaroot
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.pytition-${NUMBER:-1}.rule=Host(`${DOMAIN:-pytition.localhost}`)
+        - traefik.http.routers.pytition-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.pytition-${NUMBER:-1}.service=pytition-${NUMBER:-1}
+        - traefik.http.routers.pytition-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.pytition-${NUMBER:-1}.loadbalancer.server.port=8000
+    networks:
+      - internal
+      - traefik
+
+  db:
+    image: postgres:12.3-alpine
+    volumes:
+      - ${VOLUME_PATH}db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - internal
+
+volumes:
+  db:
+  config:
+  media:
+
+networks:
+  internal:
+    driver: overlay
+    attachable: true
+  traefik:
+    external: true
+    name: traefik-net
