@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   matomo:
-    image: matomo:${VERSION:-3.13.4}
+    image: matomo:${VERSION:-3.14.0}
     environment:
       - MATOMO_DATABASE_USERNAME=matomo
       - MATOMO_DATABASE_DBNAME=matomo
@@ -12,9 +12,12 @@ services:
       - ${VOLUME_PATH}config:/var/www/html/config
     deploy:
       labels:
-        - traefik.port=80
-        - traefik.frontend.rule=Host:${DOMAIN:-matomo.localhost}
         - traefik.enable=true
+        - traefik.http.routers.matomo-${NUMBER:-1}.rule=Host(`${DOMAIN:-matomo.localhost}`)
+        - traefik.http.routers.matomo-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.matomo-${NUMBER:-1}.service=matomo-${NUMBER:-1}
+        - traefik.http.routers.matomo-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.matomo-${NUMBER:-1}.loadbalancer.server.port=80
     networks:
       - traefik
       - internal
