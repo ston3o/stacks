@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   web:
-    image: rocketchat/rocket.chat:${VERSION:-3.2.1}
+    image: rocketchat/rocket.chat:${VERSION:-3.5.1}
     command: bash -c 'for i in `seq 1 30`; do node --max-old-space-size=4096 main.js && s=$$? && break || s=$$?; echo "Tried $$i times. Waiting 5 secs..."; sleep 5; done; (exit $$s)'
     volumes:
       - ${VOLUME_PATH}uploads:/app/uploads
@@ -16,16 +16,8 @@ services:
         - traefik.http.routers.rocketchat-${NUMBER:-1}.rule=Host(`${DOMAIN:-rocketchat.localhost}`)
         - traefik.http.routers.rocketchat-${NUMBER:-1}.entrypoints=${SCHEME:-http}
         - traefik.http.routers.rocketchat-${NUMBER:-1}.service=rocketchat-${NUMBER:-1}
-        - traefik.http.routers.rocketchat-${NUMBER:-1}.middlewares=rocketchat-${NUMBER:-1}
+        - traefik.http.routers.rocketchat-${NUMBER:-1}.tls.certresolver=letsencrypt
         - traefik.http.services.rocketchat-${NUMBER:-1}.loadbalancer.server.port=3000
-        - traefik.http.middlewares.rocketchat-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Port=443
-        - traefik.http.middlewares.rocketchat-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Proto=${SCHEME:-http}
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 1m30s
-      timeout: 10s
-      retries: 3
-      start_period: 2m
     networks:
       - traefik
       - internal
