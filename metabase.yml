@@ -2,17 +2,15 @@ version: '3.7'
 
 services:
   metabase:
-    image: metabase/metabase:${VERSION:-v0.35.4}
+    image: metabase/metabase:${VERSION:-v0.36.3}
     deploy:
       labels:
         - traefik.enable=true
         - traefik.http.routers.metabase-${NUMBER:-1}.rule=Host(`${DOMAIN:-metabase.localhost}`)
         - traefik.http.routers.metabase-${NUMBER:-1}.entrypoints=${SCHEME:-http}
         - traefik.http.routers.metabase-${NUMBER:-1}.service=metabase-${NUMBER:-1}
-        - traefik.http.routers.metabase-${NUMBER:-1}.middlewares=metabase-${NUMBER:-1}
+        - traefik.http.routers.metabase-${NUMBER:-1}.tls.certresolver=letsencrypt
         - traefik.http.services.metabase-${NUMBER:-1}.loadbalancer.server.port=3000
-        - traefik.http.middlewares.metabase-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Port=443
-        - traefik.http.middlewares.metabase-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Proto=${SCHEME:-http}
       resources:
         limits:
           memory: 500M
