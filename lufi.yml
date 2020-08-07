@@ -6,7 +6,7 @@ x-defaults: &defaults
     - ${VOLUME_PATH}data:/usr/lufi/data
     - ${VOLUME_PATH}files:/usr/lufi/files
   environment:
-    - CONTACT=${CONTACT:-noreply@ethibox.fr}
+    - CONTACT=${ADMIN_EMAIL:-noreply@ethibox.fr}
     - DEFAULT_DELAY=${DEFAULT_DELAY:-1}
     - MAX_DELAY=${MAX_DELAY:-0}
     - MAX_FILE_SIZE=${MAX_FILE_SIZE:-1048576000}
@@ -17,9 +17,12 @@ services:
     <<: *defaults
     deploy:
       labels:
-        - traefik.port=8081
         - traefik.enable=true
-        - traefik.frontend.rule=Host:${DOMAIN:-lufi.localhost}
+        - traefik.http.routers.lufi-${NUMBER:-1}.rule=Host(`${DOMAIN:-lufi.localhost}`)
+        - traefik.http.routers.lufi-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.lufi-${NUMBER:-1}.service=lufi-${NUMBER:-1}
+        - traefik.http.routers.lufi-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.lufi-${NUMBER:-1}.loadbalancer.server.port=8081
     networks:
       - traefik
 
