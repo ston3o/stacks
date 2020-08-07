@@ -17,15 +17,18 @@ services:
       - PEERTUBE_SMTP_FROM=${SMTP_FROM}
       - PEERTUBE_SMTP_TLS=${SMTP_TLS:-true}
       - PEERTUBE_SMTP_DISABLE_STARTTLS=false
-      - PT_INITIAL_ROOT_PASSWORD=${PT_INITIAL_ROOT_PASSWORD:-myp@ssw0rd}
+      - PT_INITIAL_ROOT_PASSWORD=${ADMIN_PASSWORD:-myp@ssw0rd}
     volumes:
       - ${VOLUME_PATH}data:/data
       - ${VOLUME_PATH}config:/config
     deploy:
       labels:
-        - traefik.port=9000
         - traefik.enable=true
-        - traefik.frontend.rule=Host:${DOMAIN:-peertube.localhost}
+        - traefik.http.routers.peertube-${NUMBER:-1}.rule=Host(`${DOMAIN:-peertube.localhost}`)
+        - traefik.http.routers.peertube-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.peertube-${NUMBER:-1}.service=peertube-${NUMBER:-1}
+        - traefik.http.routers.peertube-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.peertube-${NUMBER:-1}.loadbalancer.server.port=9000
     networks:
       - internal
       - traefik
