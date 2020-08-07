@@ -42,16 +42,6 @@ x-defaults: &defaults
     - JIGASI_PORT_MAX=20050
 
     - XMPP_RECORDER_DOMAIN=recorder.meet.jitsi
-    - JIBRI_RECORDER_USER=recorder
-    - JIBRI_RECORDER_PASSWORD=myp@ssw0rd
-    - JIBRI_RECORDING_DIR=/config/recordings
-    - JIBRI_FINALIZE_RECORDING_SCRIPT_PATH=/config/finalize.sh
-    - JIBRI_XMPP_USER=jibri
-    - JIBRI_XMPP_PASSWORD=myp@ssw0rd
-    - JIBRI_BREWERY_MUC=jibribrewery
-    - JIBRI_PENDING_TIMEOUT=90
-    - JIBRI_STRIP_DOMAIN_JID=muc
-    - JIBRI_LOGS_DIR=/config/logs
 
 services:
   web:
@@ -61,9 +51,12 @@ services:
       - ${VOLUME_PATH}web:/config
     deploy:
       labels:
-        - traefik.port=80
         - traefik.enable=true
-        - traefik.frontend.rule=Host:${DOMAIN:-jitsi.localhost},${OTHER_DOMAINS}
+        - traefik.http.routers.jitsi-${NUMBER:-1}.rule=Host(`${DOMAIN:-jitsi.localhost}`)
+        - traefik.http.routers.jitsi-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.jitsi-${NUMBER:-1}.service=jitsi-${NUMBER:-1}
+        - traefik.http.routers.jitsi-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.jitsi-${NUMBER:-1}.loadbalancer.server.port=80
     networks:
       traefik:
       internal:
