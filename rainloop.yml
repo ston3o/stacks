@@ -7,9 +7,12 @@ services:
       - ${VOLUME_PATH}rainloop:/rainloop/data
     deploy:
       labels:
-        - traefik.port=8888
         - traefik.enable=true
-        - traefik.frontend.rule=Host:${DOMAIN:-rainloop.localhost}
+        - traefik.http.routers.rainloop-${NUMBER:-1}.rule=Host(`${DOMAIN:-rainloop.localhost}`)
+        - traefik.http.routers.rainloop-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.rainloop-${NUMBER:-1}.service=rainloop-${NUMBER:-1}
+        - traefik.http.routers.rainloop-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.rainloop-${NUMBER:-1}.loadbalancer.server.port=8888
 
 networks:
   default:
