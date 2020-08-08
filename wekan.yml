@@ -13,10 +13,8 @@ services:
         - traefik.http.routers.wekan-${NUMBER:-1}.rule=Host(`${DOMAIN:-wekan.localhost}`)
         - traefik.http.routers.wekan-${NUMBER:-1}.entrypoints=${SCHEME:-http}
         - traefik.http.routers.wekan-${NUMBER:-1}.service=wekan-${NUMBER:-1}
-        - traefik.http.routers.wekan-${NUMBER:-1}.middlewares=wekan-${NUMBER:-1}
+        - traefik.http.routers.wekan-${NUMBER:-1}.tls.certresolver=letsencrypt
         - traefik.http.services.wekan-${NUMBER:-1}.loadbalancer.server.port=8080
-        - traefik.http.middlewares.wekan-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Port=443
-        - traefik.http.middlewares.wekan-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Proto=${SCHEME:-http}
     networks:
       - traefik
       - internal
