@@ -18,14 +18,12 @@ services:
       - HMD_DB_URL=postgres://codimd:mypassw0rd@postgres:5432/codimd
     deploy:
       labels:
-        - traefik.port=3000
         - traefik.enable=true
-        - traefik.frontend.rule=Host:${DOMAIN:-codimd.localhost}
-      resources:
-        limits:
-          memory: 200M
-        reservations:
-          memory: 200M
+        - traefik.http.routers.codimd-${NUMBER:-1}.rule=Host(`${DOMAIN:-codimd.localhost}`)
+        - traefik.http.routers.codimd-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.codimd-${NUMBER:-1}.service=codimd-${NUMBER:-1}
+        - traefik.http.routers.codimd-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.codimd-${NUMBER:-1}.loadbalancer.server.port=3000
     networks:
       - internal
       - traefik
