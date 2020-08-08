@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   onlyoffice-community-server:
-    image: onlyoffice/communityserver:10.5.1.1028
+    image: onlyoffice/communityserver:10.5.3.1172
     environment:
       - ONLYOFFICE_CORE_MACHINEKEY=${SECRET:-core_secret}
       - DOCUMENT_SERVER_PORT_80_TCP_ADDR=onlyoffice-document-server
@@ -13,10 +13,12 @@ services:
       - MYSQL_SERVER_PASS=myp@ssw0rd
     deploy:
       labels:
-        - traefik.port=80
-        - traefik.frontend.rule=Host:${DOMAIN:-onlyoffice.localhost}
-        - traefik.frontend.passHostHeader=true
         - traefik.enable=true
+        - traefik.http.routers.onlyoffice-${NUMBER:-1}.rule=Host(`${DOMAIN:-onlyoffice.localhost}`)
+        - traefik.http.routers.onlyoffice-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.onlyoffice-${NUMBER:-1}.service=onlyoffice-${NUMBER:-1}
+        - traefik.http.routers.onlyoffice-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.onlyoffice-${NUMBER:-1}.loadbalancer.server.port=80
     volumes:
       - ${VOLUME_PATH}community:/var/www/onlyoffice/Data
       - ${VOLUME_PATH}data:/var/www/onlyoffice/DocumentServerData
@@ -25,7 +27,7 @@ services:
       - internal
 
   onlyoffice-document-server:
-    image: onlyoffice/documentserver:5.4.2.46
+    image: onlyoffice/documentserver:5.6.2
     networks:
       - internal
 
