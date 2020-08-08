@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   web:
-    image: requarks/wiki:${VERSION:-2.0.12}
+    image: requarks/wiki:${VERSION:-2.3.81}
     environment:
       - DB_TYPE=postgres
       - DB_HOST=postgres
@@ -12,14 +12,12 @@ services:
       - DB_NAME=wikijs
     deploy:
       labels:
-        - traefik.port=3000
         - traefik.enable=true
-        - traefik.frontend.rule=Host:${DOMAIN:-wikijs.localhost}
-      resources:
-        limits:
-          memory: 200M
-        reservations:
-          memory: 200M
+        - traefik.http.routers.wikijs-${NUMBER:-1}.rule=Host(`${DOMAIN:-wikijs.localhost}`)
+        - traefik.http.routers.wikijs-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.wikijs-${NUMBER:-1}.service=wikijs-${NUMBER:-1}
+        - traefik.http.routers.wikijs-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.wikijs-${NUMBER:-1}.loadbalancer.server.port=3000
     networks:
       - internal
       - traefik
