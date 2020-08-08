@@ -12,9 +12,12 @@ services:
       - PASSWORD=myp@ssw0rd
     deploy:
       labels:
-        - traefik.port=8069
         - traefik.enable=true
-        - traefik.frontend.rule=Host:${DOMAIN:-odoo.localhost}
+        - traefik.http.routers.odoo-${NUMBER:-1}.rule=Host(`${DOMAIN:-odoo.localhost}`)
+        - traefik.http.routers.odoo-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.odoo-${NUMBER:-1}.service=odoo-${NUMBER:-1}
+        - traefik.http.routers.odoo-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.odoo-${NUMBER:-1}.loadbalancer.server.port=8069
     networks:
       - internal
       - traefik
