@@ -7,9 +7,12 @@ services:
       - ${VOLUME_PATH}data:/var/www/html:cached
     deploy:
       labels:
-        - traefik.port=80
         - traefik.enable=true
-        - traefik.frontend.rule=Host:${DOMAIN:-mediawiki.localhost}
+        - traefik.http.routers.mediawiki-${NUMBER:-1}.rule=Host(`${DOMAIN:-mediawiki.localhost}`)
+        - traefik.http.routers.mediawiki-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.mediawiki-${NUMBER:-1}.service=mediawiki-${NUMBER:-1}
+        - traefik.http.routers.mediawiki-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.mediawiki-${NUMBER:-1}.loadbalancer.server.port=80
     networks:
       - internal
       - traefik
