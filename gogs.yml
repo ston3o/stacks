@@ -1,26 +1,21 @@
 version: '3.7'
 
 services:
-    gogs:
-      image: gogs/gogs:${VERSION-0.11.91}
-      user: root
-      ports:
-        - target: 22
-          published: ${SSH_PORT:-10022}
-          protocol: tcp
-          mode: host
-      volumes:
-        - ${VOLUME_PATH}data:/data
-      deploy:
-        labels:
-          - traefik.port=3000
-          - traefik.enable=true
-          - traefik.frontend.rule=Host:${DOMAIN:-gogs.localhost}
-        resources:
-          limits:
-            memory: 100M
-          reservations:
-            memory: 100M
+  gogs:
+    image: gogs/gogs:${VERSION-0.11.91}
+    user: root
+    ports:
+      - { target: 22, published: 10022, mode: host, protocol: tcp }
+    volumes:
+      - ${VOLUME_PATH}data:/data
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.gogs-${NUMBER:-1}.rule=Host(`${DOMAIN:-gogs.localhost}`)
+        - traefik.http.routers.gogs-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.gogs-${NUMBER:-1}.service=gogs-${NUMBER:-1}
+        - traefik.http.routers.gogs-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.gogs-${NUMBER:-1}.loadbalancer.server.port=3000
 
 volumes:
   data:
