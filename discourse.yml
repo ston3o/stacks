@@ -11,9 +11,9 @@ x-defaults: &defaults
     - DISCOURSE_POSTGRESQL_USERNAME=discourse
     - DISCOURSE_POSTGRESQL_PASSWORD=myp@ssw0rd
     - DISCOURSE_HOSTNAME=${DOMAIN:-discourse.localhost}
-    - DISCOURSE_USERNAME=${DISCOURSE_USERNAME:-admin}
-    - DISCOURSE_PASSWORD=${DISCOURSE_PASSWORD:-myp@ssw0rd}
-    - DISCOURSE_EMAIL=${DISCOURSE_EMAIL:-admin@example.com}
+    - DISCOURSE_USERNAME=${ADMIN_USERNAME:-admin}
+    - DISCOURSE_PASSWORD=${ADMIN_PASSWORD:-myp@ssw0rd}
+    - DISCOURSE_EMAIL=${ADMIN_EMAIL:-admin@example.com}
     - DISCOURSE_HOST=discourse
     - DISCOURSE_PORT=3000
     - SMTP_HOST=${SMTP_HOST}
@@ -26,21 +26,24 @@ x-defaults: &defaults
 services:
   discourse:
     <<: *defaults
-    image: bitnami/discourse:${VERSION:-2.4.2}
+    image: bitnami/discourse:${VERSION:-2.5.0}
     volumes:
         - ${VOLUME_PATH}data:/bitnami
     deploy:
       labels:
         - traefik.enable=true
-        - traefik.port=3000
-        - traefik.frontend.rule=Host:${DOMAIN:-discourse.localhost}
+        - traefik.http.routers.discourse-${NUMBER:-1}.rule=Host(`${DOMAIN:-discourse.localhost}`)
+        - traefik.http.routers.discourse-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.discourse-${NUMBER:-1}.service=discourse-${NUMBER:-1}
+        - traefik.http.routers.discourse-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.discourse-${NUMBER:-1}.loadbalancer.server.port=3000
     networks:
       - traefik
       - internal
 
   sidekiq:
     <<: *defaults
-    image: bitnami/discourse:${VERSION:-2.4.2}
+    image: bitnami/discourse:${VERSION:-2.5.0}
     command: nami start --foreground discourse-sidekiq
     volumes:
       - ${VOLUME_PATH}sidekiq:/bitnami
