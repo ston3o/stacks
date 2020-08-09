@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   flarum:
-    image: mondedie/flarum:${VERSION:-stable-v0.1.0-beta.12}
+    image: mondedie/flarum:${VERSION:-v0.1.0-beta.13}
     command:
       - /bin/sh
       - -c
@@ -28,9 +28,12 @@ services:
       - ${VOLUME_PATH}extensions:/flarum/app/extensions
     deploy:
       labels:
-        - traefik.port=8888
         - traefik.enable=true
-        - traefik.frontend.rule=Host:${DOMAIN:-flarum.localhost}
+        - traefik.http.routers.flarum-${NUMBER:-1}.rule=Host(`${DOMAIN:-flarum.localhost}`)
+        - traefik.http.routers.flarum-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.flarum-${NUMBER:-1}.service=flarum-${NUMBER:-1}
+        - traefik.http.routers.flarum-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.flarum-${NUMBER:-1}.loadbalancer.server.port=8888
     networks:
       - internal
       - traefik
