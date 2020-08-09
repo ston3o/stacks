@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   web:
-    image: requarks/wiki:${VERSION:-2.3.81}
+    image: requarks/wiki:${VERSION:-2.4.107}
     environment:
       - DB_TYPE=postgres
       - DB_HOST=postgres
