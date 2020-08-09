@@ -36,9 +36,12 @@ services:
     <<: *defaults
     deploy:
       labels:
-        - traefik.port=9000
         - traefik.enable=true
-        - traefik.frontend.rule=Host:${DOMAIN:-sentry.localhost}
+        - traefik.http.routers.sentry-${NUMBER:-1}.rule=Host(`${DOMAIN:-sentry.localhost}`)
+        - traefik.http.routers.sentry-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.sentry-${NUMBER:-1}.service=sentry-${NUMBER:-1}
+        - traefik.http.routers.sentry-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.sentry-${NUMBER:-1}.loadbalancer.server.port=9000
     networks:
       - traefik
       - internal
