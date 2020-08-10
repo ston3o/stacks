@@ -24,26 +24,16 @@ services:
         - traefik.http.routers.portainer-${NUMBER:-1}.rule=Host(`${DOMAIN:-portainer.localhost}`)
         - traefik.http.routers.portainer-${NUMBER:-1}.entrypoints=${SCHEME:-http}
         - traefik.http.routers.portainer-${NUMBER:-1}.service=portainer-${NUMBER:-1}
-        - traefik.http.routers.portainer-${NUMBER:-1}.middlewares=portainer-${NUMBER:-1}
+        - traefik.http.routers.portainer-${NUMBER:-1}.tls.certresolver=letsencrypt
         - traefik.http.services.portainer-${NUMBER:-1}.loadbalancer.server.port=9000
-        - traefik.http.middlewares.portainer-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Port=443
-        - traefik.http.middlewares.portainer-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Proto=${SCHEME:-http}
       mode: replicated
       replicas: 1
     networks:
       - internal
       - traefik
 
-  templates:
-    image: nginx:alpine
-    volumes:
-      - ${VOLUME_PATH}templates:/usr/share/nginx/html/
-    networks:
-      - internal
-
 volumes:
   portainer:
-  templates:
 
 networks:
   internal:
