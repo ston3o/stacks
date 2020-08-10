@@ -17,7 +17,7 @@ services:
         condition: on-failure
 
   prometheus:
-    image: prom/prometheus:v2.18.1
+    image: prom/prometheus:v2.19.2
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
@@ -42,6 +42,7 @@ services:
       - GF_SMTP_HOST=${SMTP_HOST:-mail.service.host:587}
       - GF_SMTP_PASSWORD=${SMTP_PASSWORD:-myp@ssw0rd}
       - GF_SMTP_USER=${SMTP_USERNAME:-noreply@ethibox.fr}
+      - GF_SERVER_ROOT_URL=${SCHEME:-http}://${DOMAIN:-grafana.localhost}
     volumes:
       - ${VOLUME_PATH}grafana:/var/lib/grafana
     deploy:

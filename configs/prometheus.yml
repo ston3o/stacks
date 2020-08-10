@@ -8,6 +8,11 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
+  - job_name: ethibox
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['ethibox_metrics:9090']
+
   - job_name: node-exporter
     dns_sd_configs:
     - names:
