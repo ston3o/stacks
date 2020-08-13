@@ -4,13 +4,10 @@ services:
   mailserver:
     image: tvial/docker-mailserver:latest
     ports:
-      - target: 25
-        published: 25
-        protocol: tcp
-        mode: host
-      - 143:143
-      - 587:587
-      - 993:993
+      - { target: 25, published: 25, mode: host, protocol: tcp }
+      - { target: 143, published: 143, mode: host, protocol: tcp }
+      - { target: 587, published: 587, mode: host, protocol: tcp }
+      - { target: 993, published: 993, mode: host, protocol: tcp }
     volumes:
       - ${VOLUME_PATH}maildata:/var/mail
       - ${VOLUME_PATH}mailstate:/var/mail-state
@@ -37,7 +34,20 @@ services:
       placement:
         constraints: [node.role==manager]
 
+  rainloop:
+    image: hardware/rainloop:latest
+    volumes:
+      - ${VOLUME_PATH}rainloop:/rainloop/data
+    deploy:
+      labels:
+        - traefik.port=8888
+        - traefik.enable=true
+        - traefik.frontend.rule=Host:${DOMAIN:-mail.domaine.fr},${OTHER_DOMAINS}
+    networks:
+      - traefik
+
 volumes:
+  rainloop:
   config:
   certs:
   maildata:
