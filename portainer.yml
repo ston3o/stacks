@@ -14,7 +14,7 @@ services:
       - internal
 
   portainer:
-    image: portainer/portainer:${VERSION:-1.24.0}
+    image: portainer/portainer:${VERSION:-1.24.1}
     command: -H tcp://tasks.agent:9001 --tlsskipverify
     volumes:
       - ${VOLUME_PATH}portainer:/data
