@@ -1,21 +1,12 @@
 version: '3.7'
 
 services:
-  postgres:
-    image: postgres:9.6-alpine
-    environment:
-      - POSTGRES_USER=codimd
-      - POSTGRES_PASSWORD=mypassw0rd
-      - POSTGRES_DB=codimd
-    volumes:
-      - ${VOLUME_PATH}postgres:/var/lib/postgresql/data
-    networks:
-      - internal
-
   app:
-    image: hackmdio/hackmd:${VERSION:-1.3.1-alpine}
+    image: hackmdio/hackmd:${VERSION:-2.2.0}
+    # image: quay.io/codimd/server:1.6.0
     environment:
-      - HMD_DB_URL=postgres://codimd:mypassw0rd@postgres:5432/codimd
+      - CMD_ALLOW_FREEURL=true
+      - CMD_DB_URL=postgres://codimd:mypassw0rd@postgres:5432/codimd
     deploy:
       labels:
         - traefik.enable=true
@@ -27,6 +18,17 @@ services:
     networks:
       - internal
       - traefik
+
+  postgres:
+    image: postgres:9.6-alpine
+    environment:
+      - POSTGRES_USER=codimd
+      - POSTGRES_PASSWORD=mypassw0rd
+      - POSTGRES_DB=codimd
+    volumes:
+      - ${VOLUME_PATH}postgres:/var/lib/postgresql/data
+    networks:
+      - internal
 
 volumes:
   postgres:
