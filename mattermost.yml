@@ -13,7 +13,7 @@ services:
         condition: on-failure
 
   app:
-    image: mattermost/mattermost-prod-app:${VERSION:-5.24.2}
+    image: mattermost/mattermost-prod-app:${VERSION:-5.25.3}
     volumes:
       - ${VOLUME_PATH}data:/mattermost/data
       - ${VOLUME_PATH}config:/mattermost/config
@@ -37,7 +37,7 @@ services:
       - internal
 
   web:
-    image: mattermost/mattermost-prod-web:${VERSION-5.24.2}
+    image: mattermost/mattermost-prod-web:${VERSION-5.25.3}
     deploy:
       labels:
         - traefik.enable=true
