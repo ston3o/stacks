@@ -10,14 +10,12 @@ services:
       - NODE_DB_URI=mongodb://mongo/habitrpg
     deploy:
       labels:
-        - traefik.port=3000
         - traefik.enable=true
-        - traefik.frontend.rule=Host:${DOMAIN:-habitica.localhost}
-      resources:
-        limits:
-          memory: 200M
-        reservations:
-          memory: 200M
+        - traefik.http.routers.habitica-${NUMBER:-1}.rule=Host(`${DOMAIN:-habitica.localhost}`)
+        - traefik.http.routers.habitica-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.habitica-${NUMBER:-1}.service=habitica-${NUMBER:-1}
+        - traefik.http.routers.habitica-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.habitica-${NUMBER:-1}.loadbalancer.server.port=3000
     networks:
       - traefik
       - internal
@@ -26,12 +24,6 @@ services:
     image: mongo:4.0.3
     volumes:
       - ${VOLUME_PATH}mongo:/data/db
-    deploy:
-      resources:
-        limits:
-          memory: 200M
-        reservations:
-          memory: 200M
     networks:
       - internal
 
