@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   wekan:
-    image: wekanteam/wekan:${VERSION:-v4.03}
+    image: wekanteam/wekan:${VERSION:-v4.23}
     environment:
       - MONGO_URL=mongodb://mongo:27017/wekan
       - VIRTUAL_HOST=${DOMAIN:-wekan.localhost}
