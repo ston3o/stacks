@@ -17,7 +17,7 @@ services:
         condition: on-failure
 
   prometheus:
-    image: prom/prometheus:v2.19.2
+    image: prom/prometheus:v2.20.1
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
@@ -34,7 +34,7 @@ services:
       - traefik
 
   grafana:
-    image: grafana/grafana:6.7.3
+    image: grafana/grafana:6.7.4
     user: root
     environment:
       - GF_SMTP_ENABLED=true
