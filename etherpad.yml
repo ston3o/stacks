@@ -3,6 +3,12 @@ version: '3.7'
 services:
   web:
     image: etherpad/etherpad:latest
+    command:
+      - /bin/sh
+      - -c
+      - |
+        npm install ep_tables4
+        node node_modules/ep_etherpad-lite/node/server.js
     environment:
       - NODE_ENV=production
       - DB_TYPE=mysql
