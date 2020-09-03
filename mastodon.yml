@@ -53,8 +53,8 @@ services:
 
   web:
     <<: *defaults
-    image: tootsuite/mastodon:${VERSION:-v3.1.5}
-    command: bash -c "rm -f /mastodon/tmp/pids/server.pid; bundle exec rake db:migrate; bundle exec rake assets:precompile; bundle exec rails s -p 3000"
+    image: tootsuite/mastodon:${VERSION:-v3.2.0}
+    command: bash -c "chown -R 991:991 /mastodon/public/system; rm -f /mastodon/tmp/pids/server.pid; bundle exec rake db:migrate; bundle exec rake assets:precompile; bundle exec rails s -p 3000"
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider --proxy=off localhost:3000/health || exit 1"]
     deploy:
@@ -78,7 +78,7 @@ services:
 
   streaming:
     <<: *defaults
-    image: tootsuite/mastodon:${VERSION:-v3.1.5}
+    image: tootsuite/mastodon:${VERSION:-v3.2.0}
     command: node ./streaming
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider --proxy=off localhost:4000/api/v1/streaming/health || exit 1"]
@@ -87,7 +87,7 @@ services:
 
   sidekiq:
     <<: *defaults
-    image: tootsuite/mastodon:${VERSION:-v3.1.5}
+    image: tootsuite/mastodon:${VERSION:-v3.2.0}
     command: bundle exec sidekiq
     volumes:
       - ${VOLUME_PATH}system:/mastodon/public/system
