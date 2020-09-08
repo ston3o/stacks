@@ -7,8 +7,8 @@ services:
       - /bin/sh
       - -c
       - |
-        # cp /etc/nginx/nginx-onlyoffice.conf /etc/nginx/nginx.conf
-        cp /etc/nginx/nginx-nextcloud.conf /etc/nginx/nginx.conf
+        cp /etc/nginx/nginx-onlyoffice.conf /etc/nginx/nginx.conf
+        # cp /etc/nginx/nginx-nextcloud.conf /etc/nginx/nginx.conf
         sed -i -e 's/app:9000/'$$STACK_NAME'_app:9000/g' /etc/nginx/nginx.conf
         nginx -g 'daemon off;'
     environment:
@@ -31,12 +31,14 @@ services:
         - traefik.http.middlewares.nextcloud-${NUMBER:-1}-redirect.redirectregex.regex=/.well-known/(card|cal)dav
         - traefik.http.middlewares.nextcloud-${NUMBER:-1}-redirect.redirectregex.replacement=/remote.php/dav/
         - traefik.http.middlewares.nextcloud-${NUMBER:-1}-redirect.redirectregex.permanent=true
+      placement:
+        constraints: [node.hostname==manager-prod-1]
     networks:
       - internal
       - traefik
 
   app:
-    image: nextcloud:${VERSION:-19.0.1-fpm-alpine}
+    image: nextcloud:${VERSION:-19.0.2-fpm-alpine}
     command:
       - /bin/sh
       - -c
@@ -45,19 +47,20 @@ services:
         apk add --no-cache sudo
         sudo -u www-data php occ --no-warnings db:add-missing-indices
         sudo -u www-data php occ --no-warnings db:convert-filecache-bigint
+        sudo -u www-data php occ --no-warnings db:add-missing-columns
         sudo -u www-data php occ --no-warnings config:system:set trusted_domains 1 --value="nginx"
         sudo -u www-data php occ --no-warnings config:system:set trusted_domains 2 --value=""$$STACK_NAME"_nginx"
         sudo -u www-data php occ --no-warnings config:system:set trusted_proxies 0 --value="172.xx.0.x"
         sudo -u www-data php occ --no-warnings config:system:set overwriteprotocol --value="${SCHEME:-http}"
         sudo -u www-data php occ --no-warnings config:system:set overwrite.cli.url --value="${SCHEME:-http}://${DOMAIN:-nextcloud.localhost}"
-        mkdir -p config && wget -O config/objectstore.config.php https://github.com/ethibox/stacks/raw/master/configs/objectstore.config.php
+        mkdir -p config && wget -O config/objectstore.config.php https://github.com/johackim/stacks/raw/v2/configs/objectstore.config.php
 
         # Onlyoffice
-        # sudo -u www-data php occ --no-warnings app:install onlyoffice
-        # sudo -u www-data php occ --no-warnings config:system:set onlyoffice DocumentServerUrl --value="/ds-vpath/"
-        # sudo -u www-data php occ --no-warnings config:system:set onlyoffice DocumentServerInternalUrl --value="http://onlyoffice/"
-        # sudo -u www-data php occ --no-warnings config:system:set onlyoffice StorageUrl --value="http://"$$STACK_NAME"_nginx/"
-        # sudo -u www-data php occ --no-warnings config:system:set onlyoffice verify_peer_off --value=true
+        sudo -u www-data php occ --no-warnings app:install onlyoffice
+        sudo -u www-data php occ --no-warnings config:system:set onlyoffice DocumentServerUrl --value="/ds-vpath/"
+        sudo -u www-data php occ --no-warnings config:system:set onlyoffice DocumentServerInternalUrl --value="http://onlyoffice/"
+        sudo -u www-data php occ --no-warnings config:system:set onlyoffice StorageUrl --value="http://"$$STACK_NAME"_nginx/"
+        sudo -u www-data php occ --no-warnings config:system:set onlyoffice verify_peer_off --value=true
 
         php-fpm
     environment:
@@ -67,7 +70,9 @@ services:
       - MYSQL_USER=${MYSQL_USER:-nextcloud}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-myp@ssw0rd}
       - NEXTCLOUD_UPDATE=${NEXTCLOUD_UPDATE:-1}
-      - FORCE_LANGUAGE=${FORCE_LOCALE:-fr}
+      - FORCE_LANGUAGE=${FORCE_LANGUAGE:-fr}
+      - NEXTCLOUD_ADMIN_USER=${ADMIN_USERNAME:-admin}
+      - NEXTCLOUD_ADMIN_PASSWORD=${ADMIN_PASSWORD:-myp@ssw0rd}
       - ENABLE_S3=${ENABLE_S3:-false}
       - S3_BUCKET=${S3_BUCKET}
       - S3_KEY=${S3_KEY}
@@ -79,6 +84,9 @@ services:
       - S3_AUTOCREATE=${S3_AUTOCREATE:-true}
       - S3_USE_PATH_STYLE=${S3_USE_PATH_STYLE:-true}
       - S3_OBJECT_PREFIX=${S3_OBJECT_PREFIX:-urn:oid:}
+    deploy:
+      placement:
+        constraints: [node.hostname==manager-prod-1]
     volumes:
       - ${VOLUME_PATH}nextcloud:/var/www/html:cached
     networks:
@@ -92,6 +100,9 @@ services:
       - MYSQL_USER=${MYSQL_USER:-nextcloud}
       - MYSQL_DATABASE=${MYSQL_DATABASE:-nextcloud}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-myp@ssw0rd}
+    deploy:
+      placement:
+        constraints: [node.hostname==manager-prod-1]
     volumes:
       - ${VOLUME_PATH}mariadb:/var/lib/mysql
     networks:
