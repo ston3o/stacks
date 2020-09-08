@@ -7,6 +7,7 @@ services:
       - /bin/sh
       - -c
       - |
+        chown -R 1000:82 /var/www/app/
         envsubst '$$NGINX_ROOT_PATH' < /etc/nginx/nginx.template > /etc/nginx/nginx.conf
         sed -i -e 's/app:9000/'$$STACK_NAME'_app:9000/g' /etc/nginx/nginx.conf
         sed -i -e 's/fastcgi_pass backend;/fastcgi_pass backend;\n            fastcgi_param HTTPS '$$HTTPS';/g' /etc/nginx/nginx.conf
@@ -32,7 +33,6 @@ services:
 
   app:
     image: invoiceninja/invoiceninja:${VERSION:-alpine-4.5.18}
-    command: /bin/sh -c "chown -R 1000:82 /var/www/app/ && php-fpm"
     volumes:
       - ${VOLUME_PATH}storage:/var/www/app/storage
       - ${VOLUME_PATH}data:/var/www/app/public
