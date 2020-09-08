@@ -5,7 +5,7 @@ services:
     image: onlyoffice/communityserver:10.5.3.1172
     environment:
       - ONLYOFFICE_CORE_MACHINEKEY=${SECRET:-core_secret}
-      - DOCUMENT_SERVER_PORT_80_TCP_ADDR=onlyoffice-document-server
+      - DOCUMENT_SERVER_PORT_80_TCP_ADDR=onlyoffice
       - MYSQL_SERVER_ROOT_PASSWORD=myp@ssw0rd
       - MYSQL_SERVER_DB_NAME=onlyoffice 
       - MYSQL_SERVER_HOST=mariadb
@@ -24,11 +24,6 @@ services:
       - ${VOLUME_PATH}data:/var/www/onlyoffice/DocumentServerData
     networks:
       - traefik
-      - internal
-
-  onlyoffice-document-server:
-    image: onlyoffice/documentserver:5.6.2
-    networks:
       - internal
 
   mariadb:
