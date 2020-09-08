@@ -1,8 +1,20 @@
 version: '3.7'
 
 services:
-  web:
-    image: mediawiki:${VERSION:-1.33.1}
+  nginx:
+    image: ethibox/nginx-proxy
+    command:
+      - /bin/sh
+      - -c
+      - |
+        if [ -z "$$(ls -A)" ]; then
+          curl -s https://releases.wikimedia.org/mediawiki/1.34/mediawiki-1.34.2.tar.gz | tar zxvf - -C ./ --strip-components=1
+          chown -R 33:33 .
+        fi
+        sed -i -e 's/app:9000/'$$STACK_NAME'_app:9000/g' /etc/nginx/nginx.conf
+        nginx -g 'daemon off;'
+    environment:
+      - STACK_NAME={{ index .Service.Labels "com.docker.stack.namespace" }}
     volumes:
       - ${VOLUME_PATH}data:/var/www/html:cached
     deploy:
@@ -16,6 +28,13 @@ services:
     networks:
       - internal
       - traefik
+
+  app:
+    image: mediawiki:${VERSION:-1.34.2-fpm-alpine}
+    volumes:
+      - ${VOLUME_PATH}data:/var/www/html:cached
+    networks:
+      - internal
 
   mariadb:
     image: mariadb:10.3.14
