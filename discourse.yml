@@ -55,7 +55,7 @@ services:
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
     volumes:
-      - ${VOLUME_PATH}postgres:/bitnami/postgresql
+      - ${VOLUME_PATH}postgresql:/bitnami/postgresql
     networks:
       - internal
 
@@ -67,7 +67,7 @@ services:
       - internal
 
 volumes:
-  postgres:
+  postgresql:
   data:
   sidekiq:
 
