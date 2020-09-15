@@ -1,0 +1,25 @@
+version: '3.7'
+
+services:
+  maintenance:
+    image: ${IMAGE:-nginx:alpine}
+    command:
+      - /bin/sh
+      - -c
+      - |
+        wget -O /usr/share/nginx/html/index.html https://raw.githubusercontent.com/johackim/stacks/v2/configs/maintenance.html
+        nginx -g 'daemon off;'
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.maintenance-${NUMBER:-1}.rule=Host(`${DOMAIN:-maintenance.localhost}`)
+        - traefik.http.routers.maintenance-${NUMBER:-1}.priority=0
+        - traefik.http.routers.maintenance-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.maintenance-${NUMBER:-1}.service=maintenance-${NUMBER:-1}
+        - traefik.http.routers.maintenance-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.maintenance-${NUMBER:-1}.loadbalancer.server.port=${PORT:-80}
+
+networks:
+  default:
+    external: true
+    name: traefik-net
