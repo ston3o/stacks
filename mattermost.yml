@@ -1,3 +1,6 @@
+# To rename mattermost user:
+# ./bin/mattermost --config="postgres://mattermost:myp@ssw0rd@postgres:5432/mattermost?sslmode=disable" team rename mattermost <newname>
+
 version: "3.7"
 
 services:
@@ -13,7 +16,7 @@ services:
         condition: on-failure
 
   app:
-    image: mattermost/mattermost-prod-app:${VERSION:-5.25.3}
+    image: mattermost/mattermost-prod-app:${VERSION:-5.27.0}
     volumes:
       - ${VOLUME_PATH}data:/mattermost/data
       - ${VOLUME_PATH}config:/mattermost/config
