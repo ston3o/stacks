@@ -30,6 +30,7 @@ x-defaults: &defaults
     - JVB_AUTH_PASSWORD=myp@ssw0rd
     - JVB_STUN_SERVERS=stun.l.google.com:19302,stun1.l.google.com:19302,stun2.l.google.com:19302 # TODO: Remove Google
     - JVB_TCP_PORT=${JVB_TCP_PORT:-4443}
+    - JVB_PORT=${JVB_UDP_PORT:-10000}
     - JVB_TCP_HARVESTER_DISABLED=${JVB_TCP_HARVESTER_DISABLED:-false}
 
     - JICOFO_COMPONENT_SECRET=mys3cr37
@@ -57,6 +58,8 @@ services:
         - traefik.http.routers.jitsi-${NUMBER:-1}.service=jitsi-${NUMBER:-1}
         - traefik.http.routers.jitsi-${NUMBER:-1}.tls.certresolver=letsencrypt
         - traefik.http.services.jitsi-${NUMBER:-1}.loadbalancer.server.port=80
+      placement:
+        constraints: [node.hostname==manager-prod-1]
     networks:
       traefik:
       internal:
@@ -85,6 +88,10 @@ services:
     <<: *defaults
     image: jitsi/jvb
     ports:
+      - target: ${JVB_UDP_PORT:-10000}
+        published: ${JVB_UDP_PORT:-10000}
+        protocol: udp
+        mode: host
       - target: ${JVB_TCP_PORT:-4443}
         published: ${JVB_TCP_PORT:-4443}
         protocol: tcp
@@ -94,6 +101,8 @@ services:
     deploy:
       update_config:
         order: stop-first
+      placement:
+        constraints: [node.hostname==manager-prod-1]
     networks:
       - internal
       - traefik
