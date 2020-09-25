@@ -7,7 +7,10 @@ services:
       - /bin/sh
       - -c
       - |
+        # Onlyoffice
         cp /etc/nginx/nginx-onlyoffice.conf /etc/nginx/nginx.conf
+        # Collabora
+        # cp /etc/nginx/nginx-collabora.conf /etc/nginx/nginx.conf
         sed -i -e 's/app:9000/'$$STACK_NAME'_app:9000/g' /etc/nginx/nginx.conf
         nginx -g 'daemon off;'
     environment:
@@ -37,7 +40,7 @@ services:
       - traefik
 
   app:
-    image: nextcloud:${VERSION:-19.0.2-fpm-alpine}
+    image: nextcloud:${VERSION:-19.0.3-fpm-alpine}
     command:
       - /bin/sh
       - -c
@@ -47,8 +50,15 @@ services:
         sudo -u www-data php occ --no-warnings db:add-missing-indices
         sudo -u www-data php occ --no-warnings db:convert-filecache-bigint
         sudo -u www-data php occ --no-warnings db:add-missing-columns
-        sudo -u www-data php occ --no-warnings app:install onlyoffice
         mkdir -p config && wget -O config/custom.config.php https://github.com/johackim/stacks/raw/v2/configs/custom.config.php
+
+        # Onlyoffice
+        sudo -u www-data php occ --no-warnings app:install onlyoffice
+
+        # collabora
+        # sudo -u www-data php occ --no-warnings app:install richdocuments
+        # sudo -u www-data php occ --no-warnings app:enable richdocuments
+        # sudo -u www-data php occ --no-warnings config:app:set richdocuments wopi_url --value="${SCHEME:-http}://${DOMAIN:-nextcloud.localhost}"
 
         php-fpm
     environment:
@@ -94,6 +104,17 @@ services:
       - ${VOLUME_PATH}mariadb:/var/lib/mysql
     networks:
       - internal
+
+  # collabora:
+    # image: collabora/code:4.2.3.1
+    # environment:
+      # - extra_params=--o:ssl.enable=false --o:ssl.termination=true
+      # - SLEEPFORDEBUGGER=0
+      # - domain=${DOMAIN:-nextcloud.localhost}
+      # - username=${NEXTCLOUD_ADMIN_USER:-admin}
+      # - password=${NEXTCLOUD_ADMIN_PASSWORD:-myp@ssw0rd}
+    # networks:
+      # - internal
 
 volumes:
   nextcloud:
