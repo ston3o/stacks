@@ -1,0 +1,34 @@
+version: '3.7'
+
+services:
+  web:
+    image: audreyt/ethercalc
+    environment:
+      - REDIS_PORT_6379_TCP_ADDR=redis
+      - REDIS_PORT_6379_TCP_PORT=6379
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.ethercalc-${NUMBER:-1}.rule=Host(`${DOMAIN:-ethercalc.localhost}`)
+        - traefik.http.routers.ethercalc-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.ethercalc-${NUMBER:-1}.service=ethercalc-${NUMBER:-1}
+        - traefik.http.routers.ethercalc-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.ethercalc-${NUMBER:-1}.loadbalancer.server.port=8000
+
+  redis:
+    image: redis:5.0-alpine
+    volumes:
+      - ${VOLUME_PATH}redis:/data
+    networks:
+      - internal
+
+volumes:
+  redis:
+
+networks:
+  internal:
+    driver: overlay
+    attachable: true
+  default:
+    external: true
+    name: traefik-net
