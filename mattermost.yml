@@ -40,7 +40,7 @@ services:
       - internal
 
   web:
-    image: mattermost/mattermost-prod-web:${VERSION-5.25.3}
+    image: mattermost/mattermost-prod-web:${VERSION:-5.27.0}
     deploy:
       labels:
         - traefik.enable=true
@@ -54,7 +54,7 @@ services:
       - traefik
 
   postgres:
-    image: postgres:9.6-alpine
+    image: mattermost/mattermost-prod-db:${VERSION:-5.27.0}
     volumes:
       - ${VOLUME_PATH}db:/var/lib/postgresql/data
     environment:
