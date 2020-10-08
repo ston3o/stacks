@@ -8,7 +8,7 @@ services:
       - -c
       - |
         chown -R 65534:root /prometheus
-        wget --no-cache -q https://raw.githubusercontent.com/ethibox/stacks/master/configs/prometheus.yml -O /mnt/prometheus.yml
+        wget --no-cache -q https://raw.githubusercontent.com/johackim/stacks/v2/configs/prometheus.yml -O /mnt/prometheus.yml
     volumes:
       - ${VOLUME_PATH}config:/mnt
       - ${VOLUME_PATH}prometheus:/prometheus
@@ -17,7 +17,7 @@ services:
         condition: on-failure
 
   prometheus:
-    image: prom/prometheus:v2.20.1
+    image: prom/prometheus:v2.21.0
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
