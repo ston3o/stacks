@@ -1,0 +1,18 @@
+version: '3.7'
+
+services:
+  web:
+    image: cloudrac3r/bibliogram:${VERSION:-latest}
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.bibliogram-${NUMBER:-1}.rule=Host(`${DOMAIN:-bibliogram.localhost}`)
+        - traefik.http.routers.bibliogram-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.bibliogram-${NUMBER:-1}.service=bibliogram-${NUMBER:-1}
+        - traefik.http.routers.bibliogram-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.bibliogram-${NUMBER:-1}.loadbalancer.server.port=10407
+
+networks:
+  default:
+    external: true
+    name: traefik-net
