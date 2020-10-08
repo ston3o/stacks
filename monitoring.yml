@@ -29,6 +29,16 @@ services:
     volumes:
       - ${VOLUME_PATH}prometheus:/prometheus
       - ${VOLUME_PATH}config:/etc/prometheus/
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.grafana-prom-${NUMBER:-1}.rule=Host(`${DOMAIN:-grafana.localhost}`) && PathPrefix(`/prometheus/`)
+        - traefik.http.routers.grafana-prom-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.grafana-prom-${NUMBER:-1}.service=grafana-prom-${NUMBER:-1}
+        - traefik.http.routers.grafana-prom-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.grafana-prom-${NUMBER:-1}.loadbalancer.server.port=9090
+        - traefik.http.routers.grafana-prom-${NUMBER:-1}.middlewares=grafana-prom-${NUMBER:-1}-auth
+        - traefik.http.middlewares.grafana-prom-${NUMBER:-1}-auth.basicauth.users=${PROMETHEUS_USER:-admin}:${PROMETHEUS_PASSWORD:-htpasswd}
     networks:
       - internal
       - traefik
