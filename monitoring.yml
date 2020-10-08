@@ -88,6 +88,7 @@ services:
       - /:/rootfs:ro
       - /proc:/host/proc:ro
       - /etc/hostname:/etc/hostname
+      - /mnt:/mnt:ro
     environment:
       - NODE_ID={{.Node.ID}}
     command:
