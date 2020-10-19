@@ -47,7 +47,7 @@ x-defaults: &defaults
 services:
   web:
     <<: *defaults
-    image: jitsi/web
+    image: jitsi/web:${VERSION:-stable-4857}
     volumes:
       - ${VOLUME_PATH}web:/config
     deploy:
@@ -68,7 +68,7 @@ services:
 
   prosody:
     <<: *defaults
-    image: jitsi/prosody
+    image: jitsi/prosody:${VERSION:-stable-4857}
     volumes:
       - ${VOLUME_PATH}prosody:/config
     networks:
@@ -78,7 +78,7 @@ services:
 
   jicofo:
     <<: *defaults
-    image: jitsi/jicofo
+    image: jitsi/jicofo:${VERSION:-stable-4857}
     volumes:
       - ${VOLUME_PATH}jicofo:/config
     networks:
@@ -86,7 +86,7 @@ services:
 
   jvb:
     <<: *defaults
-    image: jitsi/jvb
+    image: jitsi/jvb:${VERSION:-stable-4857}
     ports:
       - target: ${JVB_UDP_PORT:-10000}
         published: ${JVB_UDP_PORT:-10000}
