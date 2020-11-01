@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   traefik:
-    image: traefik:${VERSION:-v2.2.8}
+    image: traefik:${VERSION:-v2.3.2}
     command:
       # - --log.level=DEBUG
       - --providers.docker
@@ -28,7 +28,7 @@ services:
     deploy:
       mode: ${MODE:-replicated}
       placement:
-        constraints: [node.role==manager]
+        constraints: [node.hostname==manager-prod-1]
 
 volumes:
   letsencrypt:
