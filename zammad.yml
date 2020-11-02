@@ -18,7 +18,7 @@ services:
         condition: on-failure
 
   zammad-elasticsearch:
-    image: zammad/zammad-docker-compose:zammad-elasticsearch-${VERSION:-3.4.0-18}
+    image: zammad/zammad-docker-compose:zammad-elasticsearch-${VERSION:-3.5.0-20}
     environment:
       - discovery.type=single-node
     volumes:
@@ -27,7 +27,7 @@ services:
       - internal
 
   zammad-init:
-    image: zammad/zammad-docker-compose:zammad-${VERSION:-3.4.0-18}
+    image: zammad/zammad-docker-compose:zammad-${VERSION:-3.5.0-20}
     command: ["zammad-init"]
     volumes:
       - ${VOLUME_PATH}zammad:/opt/zammad
@@ -47,8 +47,10 @@ services:
       - internal
 
   zammad-nginx:
-    image: zammad/zammad-docker-compose:zammad-${VERSION:-3.4.0-18}
+    image: zammad/zammad-docker-compose:zammad-${VERSION:-3.5.0-20}
     command: ["zammad-nginx"]
+    environment:
+      - NGINX_SERVER_SCHEME=${SCHEME:-http}
     volumes:
       - ${VOLUME_PATH}zammad:/opt/zammad
     deploy:
@@ -59,6 +61,8 @@ services:
         - traefik.http.routers.zammad-${NUMBER:-1}.service=zammad-${NUMBER:-1}
         - traefik.http.routers.zammad-${NUMBER:-1}.tls.certresolver=letsencrypt
         - traefik.http.services.zammad-${NUMBER:-1}.loadbalancer.server.port=80
+        - traefik.http.routers.zammad-${NUMBER:-1}.middlewares=zammad-${NUMBER:-1}
+        - traefik.http.middlewares.zammad-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Proto=${SCHEME:-http}
     networks:
       - traefik
       - internal
@@ -75,7 +79,7 @@ services:
       - internal
 
   zammad-railsserver:
-    image: zammad/zammad-docker-compose:zammad-${VERSION:-3.4.0-18}
+    image: zammad/zammad-docker-compose:zammad-${VERSION:-3.5.0-20}
     command: ["zammad-railsserver"]
     volumes:
       - ${VOLUME_PATH}zammad:/opt/zammad
@@ -83,7 +87,7 @@ services:
       - internal
 
   zammad-scheduler:
-    image: zammad/zammad-docker-compose:zammad-${VERSION:-3.4.0-18}
+    image: zammad/zammad-docker-compose:zammad-${VERSION:-3.5.0-20}
     command: ["zammad-scheduler"]
     volumes:
       - ${VOLUME_PATH}zammad:/opt/zammad
@@ -91,7 +95,7 @@ services:
       - internal
 
   zammad-websocket:
-    image: zammad/zammad-docker-compose:zammad-${VERSION:-3.4.0-18}
+    image: zammad/zammad-docker-compose:zammad-${VERSION:-3.5.0-20}
     command: ["zammad-websocket"]
     volumes:
       - ${VOLUME_PATH}zammad:/opt/zammad
