@@ -54,6 +54,7 @@ services:
 
         # Onlyoffice
         sudo -u www-data php occ --no-warnings app:install onlyoffice
+        sudo -u www-data php occ --no-warnings config:system:set allow_local_remote_servers --value=true
 
         # collabora
         # sudo -u www-data php occ --no-warnings app:install richdocuments
