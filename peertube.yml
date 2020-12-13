@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   peertube:
-    image: chocobozzz/peertube:${VERSION:-v2.1.1-buster}
+    image: chocobozzz/peertube:${VERSION:-v2.4.0-buster}
     environment:
       - PEERTUBE_DB_USERNAME=postgres
       - PEERTUBE_DB_PASSWORD=myp@ssw0rd
