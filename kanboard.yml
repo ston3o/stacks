@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   kanboard:
-    image: kanboard/kanboard:${VERSION:-v1.2.15}
+    image: kanboard/kanboard:${VERSION:-v1.2.18}
     environment:
       - PLUGIN_INSTALLER=true
     volumes:
