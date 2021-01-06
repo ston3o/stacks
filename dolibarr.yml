@@ -1,0 +1,49 @@
+version: '3.7'
+
+services:
+  dolibarr:
+    image: upshift/dolibarr:${VERSION:-12.0.4}
+    environment:
+      - DOLI_DB_HOST=mariadb
+      - DOLI_DB_NAME=dolibarr
+      - DOLI_DB_USER=dolibarr
+      - DOLI_DB_PASSWORD=myp@ssw0rd
+    volumes:
+      - ${VOLUME_PATH}data:/var/www/html
+      - ${VOLUME_PATH}documents:/var/www/documents
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.dolibarr-${NUMBER:-1}.rule=Host(`${DOMAIN:-dolibarr.localhost}`)
+        - traefik.http.routers.dolibarr-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.dolibarr-${NUMBER:-1}.service=dolibarr-${NUMBER:-1}
+        - traefik.http.routers.dolibarr-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.dolibarr-${NUMBER:-1}.loadbalancer.server.port=80
+    networks:
+      - internal
+      - traefik
+
+  mariadb:
+    image: mariadb:10.3.14
+    volumes:
+      - ${VOLUME_PATH}mariadb:/var/lib/mysql:cached
+    environment:
+      - MYSQL_ROOT_PASSWORD=myp@ssw0rd
+      - MYSQL_DATABASE=dolibarr
+      - MYSQL_USER=dolibarr
+      - MYSQL_PASSWORD=myp@ssw0rd
+    networks:
+      - internal
+
+volumes:
+  mariadb:
+  data:
+  documents:
+
+networks:
+  internal:
+    driver: overlay
+    attachable: true
+  traefik:
+    external: true
+    name: traefik-net
