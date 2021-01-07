@@ -2,31 +2,43 @@
 
 version: '3.7'
 
+x-defaults: &defaults
+  environment:
+    - TAIGA_HOST=${DOMAIN:-taiga.localhost}
+    - TAIGA_SECRET=${TAIGA_SECRET:-secret}
+    - TAIGA_SCHEME=${SCHEME:-http}
+    - TAIGA_PORT=${TAIGA_PORT:-80}
+    - DB_HOST=db
+    - DB_NAME=taiga
+    - DB_USER=postgres
+    - DB_PASSWORD=password
+    - RABBIT_HOST=rabbit
+    - RABBIT_USER=taiga
+    - RABBIT_PASSWORD=password
+    - RABBIT_VHOST=taiga
+    - REDIS_HOST=redis
+    - REDIS_DB=0
+    - REDIS_PASSWORD=password
+
 services:
   back:
-    image: dockertaiga/back:${VERSION:-5.0.11}
+    <<: *defaults
+    image: dockertaiga/back:${VERSION:-5.5.5}
     volumes:
       - ${VOLUME_PATH}media:/taiga-media
-    environment:
-      - TAIGA_HOST=${DOMAIN:-taiga.localhost}
-      - TAIGA_SECRET=${TAIGA_SECRET:-secret}
-      - TAIGA_SCHEME=${SCHEME:-http}
-      - DB_HOST=db
-      - DB_NAME=taiga
-      - DB_USER=postgres
-      - DB_PASSWORD=password
-      - RABBIT_HOST=rabbit
-      - RABBIT_USER=taiga
-      - RABBIT_PASSWORD=password
-      - RABBIT_VHOST=taiga
     networks:
       - internal
 
   front:
-    image: dockertaiga/front:${VERSION:-5.0.11}
-    environment:
-      - TAIGA_HOST=${DOMAIN:-taiga.localhost}
-      - TAIGA_SCHEME=${SCHEME:-http}
+    <<: *defaults
+    image: dockertaiga/front:${VERSION:-5.5.5}
+    networks:
+      - internal
+
+  redis:
+    <<: *defaults
+    image: redis:5.0
+    command: /bin/sh -c 'redis-server --requirepass $$REDIS_PASSWORD'
     networks:
       - internal
 

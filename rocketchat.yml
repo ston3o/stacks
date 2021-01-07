@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   web:
-    image: rocketchat/rocket.chat:${VERSION:-3.5.1}
+    image: rocketchat/rocket.chat:${VERSION:-3.9.4}
     command: bash -c 'for i in `seq 1 30`; do node --max-old-space-size=4096 main.js && s=$$? && break || s=$$?; echo "Tried $$i times. Waiting 5 secs..."; sleep 5; done; (exit $$s)'
     volumes:
       - ${VOLUME_PATH}uploads:/app/uploads
