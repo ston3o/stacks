@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   flarum:
-    image: mondedie/flarum:${VERSION:-v0.1.0-beta.13}
+    image: mondedie/flarum:${VERSION:-stable}
     command:
       - /bin/sh
       - -c
@@ -12,12 +12,13 @@ services:
             echo "Wait Mysql..."
             sleep 1
         done
+        cd /flarum/app && composer require qiaeru/lang-french
         /usr/local/bin/startup
     environment:
       - FORUM_URL=${SCHEME:-http}://${DOMAIN:-flarum.localhost}
-      - FLARUM_ADMIN_USER=${FLARUM_ADMIN_USER:-admin}
-      - FLARUM_ADMIN_PASS=${FLARUM_ADMIN_PASS:-myp@ssw0rd}
-      - FLARUM_ADMIN_MAIL=${FLARUM_ADMIN_MAIL:-noreply@ethibox.fr}
+      - FLARUM_ADMIN_USER=${ADMIN_USER:-admin}
+      - FLARUM_ADMIN_PASS=${ADMIN_PASSWORD:-myp@ssw0rd}
+      - FLARUM_ADMIN_MAIL=${ADMIN_EMAIL:-noreply@ethibox.fr}
       - FLARUM_TITLE=${FLARUM_TITLE:-Flarum}
       - DB_HOST=mariadb
       - DB_USER=flarum
