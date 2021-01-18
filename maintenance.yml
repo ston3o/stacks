@@ -17,7 +17,11 @@ services:
         - traefik.http.routers.maintenance-${NUMBER:-1}.entrypoints=${SCHEME:-http}
         - traefik.http.routers.maintenance-${NUMBER:-1}.service=maintenance-${NUMBER:-1}
         - traefik.http.routers.maintenance-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.routers.maintenance-${NUMBER:-1}.middlewares=maintenance-${NUMBER:-1}
         - traefik.http.services.maintenance-${NUMBER:-1}.loadbalancer.server.port=${PORT:-80}
+        - traefik.http.middlewares.maintenance-${NUMBER:-1}.redirectregex.regex=^https://(.*)/(.*)$$
+        - traefik.http.middlewares.maintenance-${NUMBER:-1}.redirectregex.replacement=https://$${1}/
+        - traefik.http.middlewares.maintenance-${NUMBER:-1}.redirectregex.permanent=false
 
 networks:
   default:
