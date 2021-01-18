@@ -12,7 +12,8 @@ services:
             echo "Wait Mysql..."
             sleep 1
         done
-        cd /flarum/app && composer require qiaeru/lang-french
+        echo "qiaeru/lang-french" > /flarum/app/extensions/list
+        echo "fof/user-directory" >> /flarum/app/extensions/list
         /usr/local/bin/startup
     environment:
       - FORUM_URL=${SCHEME:-http}://${DOMAIN:-flarum.localhost}
