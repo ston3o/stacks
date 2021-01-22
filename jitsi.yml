@@ -1,3 +1,5 @@
+# prosodyctl --config /config/prosody.cfg.lua register username meet.jitsi password
+
 version: '3.7'
 
 x-defaults: &defaults
@@ -8,7 +10,7 @@ x-defaults: &defaults
     - ENABLE_LETSENCRYPT=0
     - DOCKER_HOST_ADDRESS=${DOCKER_HOST_ADDRESS}
 
-    - ENABLE_AUTH=${ENABLE_AUTH:-0}
+    - ENABLE_AUTH=${ENABLE_AUTH:-1}
     - AUTH_TYPE=${AUTH_TYPE:-internal}
     - ENABLE_GUESTS=${ENABLE_GUESTS:-1}
 
@@ -46,7 +48,9 @@ x-defaults: &defaults
 services:
   web:
     <<: *defaults
-    image: jitsi/web:${VERSION:-stable-4857}
+    image: jitsi/web:${VERSION:-stable-5142-4}
+    healthcheck:
+      test: ["CMD", "wget", "-O", "/tmp/test", "http://localhost/http-bind"]
     volumes:
       - ${VOLUME_PATH}web:/config
     deploy:
@@ -67,7 +71,7 @@ services:
 
   prosody:
     <<: *defaults
-    image: jitsi/prosody:${VERSION:-stable-4857}
+    image: jitsi/prosody:${VERSION:-stable-5142-4}
     volumes:
       - ${VOLUME_PATH}prosody:/config
     networks:
@@ -77,7 +81,7 @@ services:
 
   jicofo:
     <<: *defaults
-    image: jitsi/jicofo:${VERSION:-stable-4857}
+    image: jitsi/jicofo:${VERSION:-stable-5142-4}
     volumes:
       - ${VOLUME_PATH}jicofo:/config
     networks:
@@ -85,7 +89,7 @@ services:
 
   jvb:
     <<: *defaults
-    image: jitsi/jvb:${VERSION:-stable-4857}
+    image: jitsi/jvb:${VERSION:-stable-5142-4}
     ports:
       - target: ${JVB_UDP_PORT:-10000}
         published: ${JVB_UDP_PORT:-10000}
