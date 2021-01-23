@@ -26,9 +26,9 @@ x-defaults: &defaults
 services:
   discourse:
     <<: *defaults
-    image: bitnami/discourse:${VERSION:-2.5.0}
+    image: bitnami/discourse:${VERSION:-2.6.0}
     volumes:
-        - ${VOLUME_PATH}data:/bitnami
+      - ${VOLUME_PATH}data:/bitnami
     deploy:
       labels:
         - traefik.enable=true
@@ -43,7 +43,7 @@ services:
 
   sidekiq:
     <<: *defaults
-    image: bitnami/discourse:${VERSION:-2.5.0}
+    image: bitnami/discourse:${VERSION:-2.6.0}
     command: nami start --foreground discourse-sidekiq
     volumes:
       - ${VOLUME_PATH}sidekiq:/bitnami
