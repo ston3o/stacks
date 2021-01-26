@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   traefik:
-    image: traefik:${VERSION:-v2.3.4}
+    image: traefik:${VERSION:-v2.4.0}
     command:
       # - --log.level=DEBUG
       - --providers.docker
@@ -14,7 +14,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
-      - { target: 80, published: 80, mode: host, protocol: tcp }
+      - {target: 80, published: 80, mode: host, protocol: tcp}
     deploy:
       mode: ${MODE:-replicated}
       placement:
