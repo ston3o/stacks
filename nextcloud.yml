@@ -8,9 +8,9 @@ services:
       - -c
       - |
         # Onlyoffice
-        cp /etc/nginx/nginx-onlyoffice.conf /etc/nginx/nginx.conf
+        # cp /etc/nginx/nginx-onlyoffice.conf /etc/nginx/nginx.conf
         # Collabora
-        # cp /etc/nginx/nginx-collabora.conf /etc/nginx/nginx.conf
+        cp /etc/nginx/nginx-collabora.conf /etc/nginx/nginx.conf
         sed -i -e 's/app:9000/'$$STACK_NAME'_app:9000/g' /etc/nginx/nginx.conf
         nginx -g 'daemon off;'
     environment:
@@ -33,14 +33,14 @@ services:
         - traefik.http.middlewares.nextcloud-${NUMBER:-1}-redirect.redirectregex.regex=/.well-known/(card|cal)dav
         - traefik.http.middlewares.nextcloud-${NUMBER:-1}-redirect.redirectregex.replacement=/remote.php/dav/
         - traefik.http.middlewares.nextcloud-${NUMBER:-1}-redirect.redirectregex.permanent=true
-      placement:
-        constraints: [node.hostname==manager-prod-1]
+      # placement:
+        # constraints: [node.hostname==manager-prod-1]
     networks:
       - internal
       - traefik
 
   app:
-    image: nextcloud:${VERSION:-20-fpm-alpine}
+    image: nextcloud:${VERSION:-21-beta-fpm-alpine}
     command:
       - /bin/sh
       - -c
@@ -53,13 +53,13 @@ services:
         mkdir -p config && wget -O config/custom.config.php https://github.com/johackim/stacks/raw/v2/configs/custom.config.php
 
         # Onlyoffice
-        sudo -u www-data php occ --no-warnings app:install onlyoffice
-        sudo -u www-data php occ --no-warnings config:system:set allow_local_remote_servers --value=true
+        # sudo -u www-data php occ --no-warnings app:install onlyoffice
+        # sudo -u www-data php occ --no-warnings config:system:set allow_local_remote_servers --value=true
 
         # collabora
-        # sudo -u www-data php occ --no-warnings app:install richdocuments
-        # sudo -u www-data php occ --no-warnings app:enable richdocuments
-        # sudo -u www-data php occ --no-warnings config:app:set richdocuments wopi_url --value="${SCHEME:-http}://${DOMAIN:-nextcloud.localhost}"
+        sudo -u www-data php occ --no-warnings app:install richdocuments
+        sudo -u www-data php occ --no-warnings app:enable --force richdocuments
+        sudo -u www-data php occ --no-warnings config:app:set richdocuments wopi_url --value="${SCHEME:-http}://${DOMAIN:-nextcloud.localhost}"
 
         php-fpm
     environment:
@@ -107,7 +107,7 @@ services:
       - internal
 
   # collabora:
-    # image: collabora/code:4.2.3.1
+    # image: collabora/code:6.4.4.2
     # environment:
       # - extra_params=--o:ssl.enable=false --o:ssl.termination=true
       # - SLEEPFORDEBUGGER=0
