@@ -16,7 +16,7 @@ services:
         condition: on-failure
 
   app:
-    image: mattermost/mattermost-prod-app:${VERSION:-5.29.1}
+    image: mattermost/mattermost-prod-app:${VERSION:-5.30.2}
     volumes:
       - ${VOLUME_PATH}data:/mattermost/data
       - ${VOLUME_PATH}config:/mattermost/config
@@ -40,7 +40,7 @@ services:
       - internal
 
   web:
-    image: mattermost/mattermost-prod-web:${VERSION:-5.29.1}
+    image: mattermost/mattermost-prod-web:${VERSION:-5.30.2}
     deploy:
       labels:
         - traefik.enable=true
@@ -54,7 +54,7 @@ services:
       - traefik
 
   postgres:
-    image: mattermost/mattermost-prod-db:${VERSION:-5.29.1}
+    image: mattermost/mattermost-prod-db:${VERSION:-5.30.2}
     volumes:
       - ${VOLUME_PATH}db:/var/lib/postgresql/data
     environment:
