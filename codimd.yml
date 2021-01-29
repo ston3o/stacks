@@ -2,11 +2,14 @@ version: '3.7'
 
 services:
   app:
-    image: hackmdio/hackmd:${VERSION:-2.2.0}
-    # image: quay.io/codimd/server:1.6.0
+    image: hackmdio/hackmd:${VERSION:-2.3.2}
+    volumes:
+      - ${VOLUME_PATH}uploads:/home/hackmd/app/public/uploads
     environment:
       - CMD_ALLOW_FREEURL=true
-      - CMD_DB_URL=postgres://codimd:mypassw0rd@postgres:5432/codimd
+      - CMD_ALLOW_EMAIL_REGISTER=${CMD_ALLOW_EMAIL_REGISTER:-true}
+      - CMD_DEFAULT_PERMISSION=${CMD_DEFAULT_PERMISSION:-editable}
+      - CMD_DB_URL=postgres://codimd:myp@ssw0rd@postgres:5432/codimd
     deploy:
       labels:
         - traefik.enable=true
@@ -23,7 +26,7 @@ services:
     image: postgres:9.6-alpine
     environment:
       - POSTGRES_USER=codimd
-      - POSTGRES_PASSWORD=mypassw0rd
+      - POSTGRES_PASSWORD=myp@ssw0rd
       - POSTGRES_DB=codimd
     volumes:
       - ${VOLUME_PATH}postgres:/var/lib/postgresql/data
@@ -32,6 +35,7 @@ services:
 
 volumes:
   postgres:
+  uploads:
 
 networks:
   internal:
