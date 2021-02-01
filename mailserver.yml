@@ -2,12 +2,12 @@ version: '3.7'
 
 services:
   mailserver:
-    image: tvial/docker-mailserver:latest
+    image: mailserver/docker-mailserver:${VERSION:-latest}
     ports:
-      - { target: 25, published: 25, mode: host, protocol: tcp }
-      - { target: 143, published: 143, mode: host, protocol: tcp }
-      - { target: 587, published: 587, mode: host, protocol: tcp }
-      - { target: 993, published: 993, mode: host, protocol: tcp }
+      - {target: 25, published: 25, mode: host, protocol: tcp}
+      - {target: 143, published: 143, mode: host, protocol: tcp}
+      - {target: 587, published: 587, mode: host, protocol: tcp}
+      - {target: 993, published: 993, mode: host, protocol: tcp}
     volumes:
       - ${VOLUME_PATH}maildata:/var/mail
       - ${VOLUME_PATH}mailstate:/var/mail-state
@@ -40,9 +40,12 @@ services:
       - ${VOLUME_PATH}rainloop:/rainloop/data
     deploy:
       labels:
-        - traefik.port=8888
         - traefik.enable=true
-        - traefik.frontend.rule=Host:${DOMAIN:-mail.domaine.fr},${OTHER_DOMAINS}
+        - traefik.http.routers.rainloop-${NUMBER:-1}.rule=Host(`${DOMAIN:-rainloop.localhost}`)
+        - traefik.http.routers.rainloop-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.rainloop-${NUMBER:-1}.service=rainloop-${NUMBER:-1}
+        - traefik.http.routers.rainloop-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.rainloop-${NUMBER:-1}.loadbalancer.server.port=8888
     networks:
       - traefik
 
