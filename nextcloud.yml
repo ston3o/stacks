@@ -40,7 +40,7 @@ services:
       - traefik
 
   app:
-    image: nextcloud:${VERSION:-21-beta-fpm-alpine}
+    image: nextcloud:${VERSION:-21-beta-fpm-alpine@sha256:42acb4c9e0bfed46f8f5a83cea69f471ab5e3fe883fef2ac99ceaaac5de089b0}
     command:
       - /bin/sh
       - -c
