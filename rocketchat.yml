@@ -17,7 +17,9 @@ services:
         - traefik.http.routers.rocketchat-${NUMBER:-1}.entrypoints=${SCHEME:-http}
         - traefik.http.routers.rocketchat-${NUMBER:-1}.service=rocketchat-${NUMBER:-1}
         - traefik.http.routers.rocketchat-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.routers.rocketchat-${NUMBER:-1}.middlewares=rocketchat-${NUMBER:-1}
         - traefik.http.services.rocketchat-${NUMBER:-1}.loadbalancer.server.port=3000
+        - traefik.http.middlewares.rocketchat-${NUMBER:-1}.headers.customFrameOptionsValue=ALLOW
     networks:
       - traefik
       - internal
