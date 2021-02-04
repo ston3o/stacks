@@ -33,8 +33,8 @@ services:
         - traefik.http.middlewares.nextcloud-${NUMBER:-1}-redirect.redirectregex.regex=/.well-known/(card|cal)dav
         - traefik.http.middlewares.nextcloud-${NUMBER:-1}-redirect.redirectregex.replacement=/remote.php/dav/
         - traefik.http.middlewares.nextcloud-${NUMBER:-1}-redirect.redirectregex.permanent=true
-      # placement:
-        # constraints: [node.hostname==manager-prod-1]
+      placement:
+        constraints: [node.hostname==manager-prod-1]
     networks:
       - internal
       - traefik
