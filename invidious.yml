@@ -1,0 +1,73 @@
+version: '3.7'
+
+services:
+  web:
+    image: omarroth/invidious:${VERSION:-latest}
+    environment:
+      INVIDIOUS_CONFIG: |
+        channel_threads: 1
+        check_tables: true
+        feed_threads: 1
+        db:
+          user: invidious
+          password: myp@ssw0rd
+          host: postgres
+          port: 5432
+          dbname: invidious
+        full_refresh: false
+        https_only: false
+        popular_enabled: false
+        default_user_preferences:
+          default_home: Trending
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.invidious-${NUMBER:-1}.rule=Host(`${DOMAIN:-invidious.localhost}`)
+        - traefik.http.routers.invidious-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.invidious-${NUMBER:-1}.service=invidious-${NUMBER:-1}
+        - traefik.http.routers.invidious-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.invidious-${NUMBER:-1}.loadbalancer.server.port=3000
+    networks:
+      - internal
+      - traefik
+
+  postgres:
+    image: postgres:11.2-alpine
+    entrypoint: /bin/sh -c '/bin/sh -c "$${@}"'
+    command:
+      - /bin/sh
+      - -c
+      - |
+        mkdir -p /config/sql
+        wget -O /config/sql/annotations.sql https://raw.githubusercontent.com/iv-org/invidious/master/config/sql/annotations.sql
+        wget -O /config/sql/channel_videos.sql https://raw.githubusercontent.com/iv-org/invidious/master/config/sql/channel_videos.sql
+        wget -O /config/sql/channels.sql https://raw.githubusercontent.com/iv-org/invidious/master/config/sql/channels.sql
+        wget -O /config/sql/nonces.sql https://raw.githubusercontent.com/iv-org/invidious/master/config/sql/nonces.sql
+        wget -O /config/sql/playlist_videos.sql https://raw.githubusercontent.com/iv-org/invidious/master/config/sql/playlist_videos.sql
+        wget -O /config/sql/playlists.sql https://raw.githubusercontent.com/iv-org/invidious/master/config/sql/playlists.sql
+        wget -O /config/sql/session_ids.sql https://raw.githubusercontent.com/iv-org/invidious/master/config/sql/session_ids.sql
+        wget -O /config/sql/users.sql https://raw.githubusercontent.com/iv-org/invidious/master/config/sql/users.sql
+        wget -O /config/sql/videos.sql https://raw.githubusercontent.com/iv-org/invidious/master/config/sql/videos.sql
+        wget -O /docker-entrypoint-initdb.d/init-invidious-db.sh https://raw.githubusercontent.com/iv-org/invidious/master/docker/init-invidious-db.sh
+        sed -i -e s/kemal/$$POSTGRES_USER/g /config/sql/*
+        chmod +x /docker-entrypoint-initdb.d/init-invidious-db.sh
+        /usr/local/bin/docker-entrypoint.sh postgres
+    environment:
+      - POSTGRES_DB=invidious
+      - POSTGRES_USER=invidious
+      - POSTGRES_PASSWORD=myp@ssw0rd
+    volumes:
+      - ${VOLUME_PATH}postgres:/var/lib/postgresql/data
+    networks:
+      - internal
+
+volumes:
+  postgres:
+
+networks:
+  internal:
+    driver: overlay
+    attachable: true
+  traefik:
+    external: true
+    name: traefik-net
