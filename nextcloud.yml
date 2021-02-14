@@ -47,9 +47,10 @@ services:
       - |
         sleep 10
         apk add --no-cache sudo
-        sudo -u www-data php occ --no-warnings db:add-missing-indices
-        sudo -u www-data php occ --no-warnings db:convert-filecache-bigint
-        sudo -u www-data php occ --no-warnings db:add-missing-columns
+        sudo -u www-data php occ --no-warnings db:add-missing-indices -q
+        sudo -u www-data php occ --no-warnings db:add-missing-columns -q
+        sudo -u www-data php occ --no-warnings db:add-missing-primary-keys -q
+        sudo -u www-data php occ --no-warnings db:convert-filecache-bigint -q
         mkdir -p config && wget -O config/custom.config.php https://github.com/johackim/stacks/raw/v2/configs/custom.config.php
 
         # Onlyoffice
@@ -61,7 +62,9 @@ services:
         sudo -u www-data php occ --no-warnings app:enable --force richdocuments
         sudo -u www-data php occ --no-warnings config:app:set richdocuments wopi_url --value="${SCHEME:-http}://${DOMAIN:-nextcloud.localhost}"
 
-        php-fpm
+        apk add --no-cache supervisor && mkdir /var/log/supervisord /var/run/supervisord
+        wget -O /supervisord.conf https://bit.ly/3afaaIu
+        /usr/bin/supervisord -c /supervisord.conf
     environment:
       - STACK_NAME={{ index .Service.Labels "com.docker.stack.namespace" }}
       - DOMAIN=${DOMAIN:-nextcloud.localhost}
