@@ -2,6 +2,7 @@
 
 $CONFIG = array(
     'force_language' => getenv('FORCE_LANGUAGE'),
+    'default_phone_region' => 'FR',
     'trusted_domains' => array(
         0 => 'nginx',
         1 => getenv('DOMAIN'),
