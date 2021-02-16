@@ -40,17 +40,18 @@ services:
       - traefik
 
   app:
-    image: nextcloud:${VERSION:-21-beta-fpm-alpine@sha256:42acb4c9e0bfed46f8f5a83cea69f471ab5e3fe883fef2ac99ceaaac5de089b0}
+    image: nextcloud:${VERSION:-20-fpm-alpine}
     command:
       - /bin/sh
       - -c
       - |
         sleep 10
-        apk add --no-cache sudo
+        apk add --no-cache sudo imagemagick
         sudo -u www-data php occ --no-warnings db:add-missing-indices -q
         sudo -u www-data php occ --no-warnings db:add-missing-columns -q
         sudo -u www-data php occ --no-warnings db:add-missing-primary-keys -q
         sudo -u www-data php occ --no-warnings db:convert-filecache-bigint -q
+        sudo -u www-data php occ --no-warnings background:cron
         mkdir -p config && wget -O config/custom.config.php https://github.com/johackim/stacks/raw/v2/configs/custom.config.php
 
         # Onlyoffice
