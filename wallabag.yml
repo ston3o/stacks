@@ -1,8 +1,11 @@
+# /var/www/wallabag/bin/console doctrine:migrations:migrate --env=prod --no-interaction
+# ./scripts/install.sh prod --ignore-root-warning
+
 version: '3.7'
 
 services:
   web:
-    image: wallabag/wallabag:${VERSION:-2.3.8}
+    image: wallabag/wallabag:${VERSION:-2.4.1}
     volumes:
       - ${VOLUME_PATH}data:/var/www/wallabag/data
     environment:
