@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   agent:
-    image: portainer/agent:2.0.0
+    image: portainer/agent:2.1.0
     environment:
       - AGENT_CLUSTER_ADDR=tasks.agent
     volumes:
@@ -14,7 +14,7 @@ services:
       - internal
 
   portainer:
-    image: portainer/portainer-ce:${VERSION:-2.0.1-alpine}
+    image: portainer/portainer-ce:${VERSION:-2.1.1-alpine}
     command: -H tcp://tasks.agent:9001 --tlsskipverify
     volumes:
       - ${VOLUME_PATH}portainer:/data
