@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   polr:
-    image: ethibox/polr:${VERSION:-2.2.0}
+    image: ajanvier/polr:${VERSION:-2.3.0}
     environment:
       - DB_HOST=mariadb
       - DB_DATABASE=${DB_DATABASE:-polr}
