@@ -2,10 +2,10 @@ version: '3.7'
 
 services:
   gogs:
-    image: gogs/gogs:${VERSION-0.11.91}
+    image: gogs/gogs:${VERSION:-0.12.3}
     user: root
     ports:
-      - { target: 22, published: 10022, mode: host, protocol: tcp }
+      - {target: 22, published: 10022, mode: host, protocol: tcp}
     volumes:
       - ${VOLUME_PATH}data:/data
     deploy:
