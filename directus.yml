@@ -1,0 +1,57 @@
+version: '3.7'
+
+services:
+  directus:
+    image: directus/directus:${VERSION:-v9.0.0-rc.51}
+    environment:
+      - KEY=${KEY:-255d861b-5ea1-5996-9aa3-922530ec40b1}
+      - SECRET=${SECRET:-6116487b-cda1-52c2-b5b5-c8022c45e263}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@example.com}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-d1r3ctu5}
+      - DB_CLIENT=pg
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=directus
+      - DB_USER=directus
+      - DB_PASSWORD=myp@ssw0rd
+      - CACHE_ENABLED=true
+      - CACHE_STORE=redis
+      - CACHE_REDIS=redis://redis:6379
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.directus-${NUMBER:-1}.rule=Host(`${DOMAIN:-directus.localhost}`)
+        - traefik.http.routers.directus-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.directus-${NUMBER:-1}.service=directus-${NUMBER:-1}
+        - traefik.http.routers.directus-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.directus-${NUMBER:-1}.loadbalancer.server.port=8055
+    networks:
+      - internal
+      - traefik
+
+  redis:
+    image: redis:6
+    networks:
+      - internal
+
+  postgres:
+    image: postgres:11.2-alpine
+    environment:
+      POSTGRES_DB: directus
+      POSTGRES_USER: directus
+      POSTGRES_PASSWORD: myp@ssw0rd
+    volumes:
+      - ${VOLUME_PATH}postgres:/var/lib/postgresql/data
+    networks:
+      - internal
+
+volumes:
+  postgres:
+
+networks:
+  internal:
+    driver: overlay
+    attachable: true
+  traefik:
+    external: true
+    name: traefik-net
