@@ -2,12 +2,12 @@ version: '3.7'
 
 services:
   web:
-    image: etherpad/etherpad:latest
+    image: etherpad/etherpad:${VERSION:-1.8.13}
     command:
       - /bin/sh
       - -c
       - |
-        npm install ep_tables4
+        npm install ep_tables4 ep_copy_paste_images
         node node_modules/ep_etherpad-lite/node/server.js
     environment:
       - NODE_ENV=production
