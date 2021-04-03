@@ -2,12 +2,12 @@ version: '3.7'
 
 services:
   directus:
-    image: directus/directus:${VERSION:-v9.0.0-rc.51}
+    image: directus/directus:${VERSION:-v9.0.0-rc.53}
     environment:
       - KEY=${KEY:-255d861b-5ea1-5996-9aa3-922530ec40b1}
       - SECRET=${SECRET:-6116487b-cda1-52c2-b5b5-c8022c45e263}
       - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@example.com}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-d1r3ctu5}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-myp@ssw0rd}
       - DB_CLIENT=pg
       - DB_HOST=postgres
       - DB_PORT=5432
@@ -17,6 +17,19 @@ services:
       - CACHE_ENABLED=true
       - CACHE_STORE=redis
       - CACHE_REDIS=redis://redis:6379
+      - EMAIL_SMTP_HOST=${EMAIL_SMTP_HOST}
+      - EMAIL_SMTP_PORT=${EMAIL_SMTP_PORT:-587}
+      - EMAIL_SMTP_USER=${EMAIL_SMTP_USER}
+      - EMAIL_SMTP_PASSWORD=${EMAIL_SMTP_PASSWORD}
+      - EMAIL_SMTP_SECURE=${EMAIL_SMTP_SECURE:-false}
+      - EMAIL_SMTP_POOL=${EMAIL_SMTP_POOL:-false}
+      - EMAIL_TRANSPORT=${EMAIL_TRANSPORT:-smtp}
+      - EMAIL_FROM=${EMAIL_FROM}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - PUBLIC_URL=${SCHEME:-http}://${DOMAIN:-directus.localhost}
+    volumes:
+      - ${VOLUME_PATH}extensions:/directus/extensions
+      - ${VOLUME_PATH}uploads:/directus/uploads
     deploy:
       labels:
         - traefik.enable=true
@@ -30,7 +43,7 @@ services:
       - traefik
 
   redis:
-    image: redis:6
+    image: redis:6-alpine
     networks:
       - internal
 
@@ -47,6 +60,8 @@ services:
 
 volumes:
   postgres:
+  extensions:
+  uploads:
 
 networks:
   internal:
