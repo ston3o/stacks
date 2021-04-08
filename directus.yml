@@ -2,15 +2,15 @@ version: '3.7'
 
 services:
   directus:
-    image: directus/directus:${VERSION:-v9.0.0-rc.53}
+    image: directus/directus:${VERSION:-v9.0.0-rc.55}
     environment:
       - KEY=${KEY:-255d861b-5ea1-5996-9aa3-922530ec40b1}
       - SECRET=${SECRET:-6116487b-cda1-52c2-b5b5-c8022c45e263}
       - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@example.com}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-myp@ssw0rd}
-      - DB_CLIENT=pg
-      - DB_HOST=postgres
-      - DB_PORT=5432
+      - DB_CLIENT=mysql
+      - DB_HOST=mariadb
+      - DB_PORT=3306
       - DB_DATABASE=directus
       - DB_USER=directus
       - DB_PASSWORD=myp@ssw0rd
@@ -47,19 +47,20 @@ services:
     networks:
       - internal
 
-  postgres:
-    image: postgres:11.2-alpine
-    environment:
-      POSTGRES_DB: directus
-      POSTGRES_USER: directus
-      POSTGRES_PASSWORD: myp@ssw0rd
+  mariadb:
+    image: mariadb:10.3.14
     volumes:
-      - ${VOLUME_PATH}postgres:/var/lib/postgresql/data
+      - ${VOLUME_PATH}mariadb:/var/lib/mysql:cached
+    environment:
+      - MYSQL_ROOT_PASSWORD=myp@ssw0rd
+      - MYSQL_DATABASE=directus
+      - MYSQL_USER=directus
+      - MYSQL_PASSWORD=myp@ssw0rd
     networks:
       - internal
 
 volumes:
-  postgres:
+  mariadb:
   extensions:
   uploads:
 
