@@ -5,6 +5,7 @@ services:
     image: directus/directus:${VERSION:-v9.0.0-rc.55}
     environment:
       - KEY=${KEY:-255d861b-5ea1-5996-9aa3-922530ec40b1}
+      - ACCESS_TOKEN_TTL=${ACCESS_TOKEN_TTL:-15m}
       - SECRET=${SECRET:-6116487b-cda1-52c2-b5b5-c8022c45e263}
       - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@example.com}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-myp@ssw0rd}
