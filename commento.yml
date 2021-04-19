@@ -8,11 +8,11 @@ services:
       - COMMENTO_PORT=8080
       - COMMENTO_POSTGRES=postgres://commento:myp@ssw0rd@postgres:5432/commento?sslmode=disable
       - COMMENTO_FORBID_NEW_OWNERS=${COMMENTO_FORBID_NEW_OWNERS:-false}
-      - COMMENTO_SMTP_HOST=${COMMENTO_SMTP_HOST:-mail.service.host}
-      - COMMENTO_SMTP_PORT=${COMMENTO_SMTP_PORT:-587}
-      - COMMENTO_SMTP_USERNAME=${COMMENTO_SMTP_USERNAME:-noreply@ethibox.fr}
-      - COMMENTO_SMTP_PASSWORD=${COMMENTO_SMTP_PASSWORD:-password}
-      - COMMENTO_SMTP_FROM_ADDRESS=${COMMENTO_SMTP_FROM_ADDRESS:-noreply@ethibox.fr}
+      - COMMENTO_SMTP_HOST=${SMTP_HOST:-mail.service.host}
+      - COMMENTO_SMTP_PORT=${SMTP_PORT:-587}
+      - COMMENTO_SMTP_USERNAME=${SMTP_USERNAME:-noreply@ethibox.fr}
+      - COMMENTO_SMTP_PASSWORD=${SMTP_PASSWORD:-myp@ssw0rd}
+      - COMMENTO_SMTP_FROM_ADDRESS=${SMTP_FROM:-noreply@ethibox.fr}
     deploy:
       labels:
         - traefik.enable=true
