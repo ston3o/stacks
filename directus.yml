@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   directus:
-    image: directus/directus:${VERSION:-v9.0.0-rc.55}
+    image: directus/directus:${VERSION:-v9.0.0-rc.61}
     environment:
       - KEY=${KEY:-255d861b-5ea1-5996-9aa3-922530ec40b1}
       - ACCESS_TOKEN_TTL=${ACCESS_TOKEN_TTL:-15m}
@@ -15,6 +15,7 @@ services:
       - DB_DATABASE=directus
       - DB_USER=directus
       - DB_PASSWORD=myp@ssw0rd
+      - DB_CHARSET=utf8mb4_unicode_ci
       - CACHE_ENABLED=true
       - CACHE_STORE=redis
       - CACHE_REDIS=redis://redis:6379
@@ -49,7 +50,8 @@ services:
       - internal
 
   mariadb:
-    image: mariadb:10.3.14
+    image: mariadb:10.5.9
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
       - ${VOLUME_PATH}mariadb:/var/lib/mysql:cached
     environment:
