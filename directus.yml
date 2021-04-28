@@ -15,7 +15,7 @@ services:
       - DB_DATABASE=directus
       - DB_USER=directus
       - DB_PASSWORD=myp@ssw0rd
-      - DB_CHARSET=utf8mb4_unicode_ci
+      - DB_CHARSET=utf8mb4
       - CACHE_ENABLED=true
       - CACHE_STORE=redis
       - CACHE_REDIS=redis://redis:6379
