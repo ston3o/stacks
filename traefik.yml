@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   traefik:
-    image: traefik:${VERSION:-v2.4.7}
+    image: traefik:${VERSION:-v2.4.8}
     command:
       # - --log.level=DEBUG
       - --providers.docker
