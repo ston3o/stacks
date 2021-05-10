@@ -2,46 +2,54 @@ version: '3.7'
 
 services:
   n8n:
-    image: n8nio/n8n:0.69.1
+    image: n8nio/n8n:0.119.0
     command: /bin/sh -c "sleep 5; n8n start"
     user: root
     environment:
-      - DB_TYPE=mongodb
-      - DB_MONGODB_CONNECTION_URL=mongodb://mongo:27017/n8n
       - NODE_ENV=production
       - N8N_PROTOCOL=${SCHEME:-http}
       - N8N_HOST=${DOMAIN:-n8n.localhost}
       - WEBHOOK_TUNNEL_URL=${SCHEME:-http}://${DOMAIN:-n8n.localhost}/
       - VUE_APP_URL_BASE_API=${SCHEME:-http}://${DOMAIN:-n8n.localhost}/
+      - DB_TYPE=mariadb
+      - DB_MYSQLDB_HOST=mariadb
+      - DB_MYSQLDB_PORT=3306
+      - DB_MYSQLDB_DATABASE=${MYSQL_DATABASE:-n8n}
+      - DB_MYSQLDB_USER=${MYSQL_USER:-n8n}
+      - DB_MYSQLDB_PASSWORD=${MYSQL_PASSWORD:-myp@ssw0rd}
       - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER:-admin}
-      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD:-myp@ssw0rd}
+      - N8N_BASIC_AUTH_USER=${ADMIN_USERNAME:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${ADMIN_PASSWORD:-myp@ssw0rd}
     volumes:
-      - ${VOLUME_PATH}n8n:/root/.n8n
+      - ${VOLUME_PATH}n8n:/home/node/.n8n
     deploy:
       labels:
         - traefik.enable=true
         - traefik.http.routers.n8n-${NUMBER:-1}.rule=Host(`${DOMAIN:-n8n.localhost}`)
         - traefik.http.routers.n8n-${NUMBER:-1}.entrypoints=${SCHEME:-http}
         - traefik.http.routers.n8n-${NUMBER:-1}.service=n8n-${NUMBER:-1}
-        - traefik.http.routers.n8n-${NUMBER:-1}.middlewares=n8n-${NUMBER:-1}
+        - traefik.http.routers.n8n-${NUMBER:-1}.tls.certresolver=letsencrypt
         - traefik.http.services.n8n-${NUMBER:-1}.loadbalancer.server.port=5678
-        - traefik.http.middlewares.n8n-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Port=443
-        - traefik.http.middlewares.n8n-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Proto=${SCHEME:-http}
     networks:
       - traefik
       - internal
 
-  mongo:
-    image: mongo:4.0.3
+  mariadb:
+    image: mariadb:10.5.9
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
-      - ${VOLUME_PATH}mongo:/data/db
+      - ${VOLUME_PATH}mariadb:/var/lib/mysql:cached
+    environment:
+      - MYSQL_ROOT_PASSWORD=myp@ssw0rd
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-n8n}
+      - MYSQL_USER=${MYSQL_USER:-n8n}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-myp@ssw0rd}
     networks:
       - internal
 
 volumes:
   n8n:
-  mongo:
+  mariadb:
 
 networks:
   internal:
