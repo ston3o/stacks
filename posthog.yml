@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   web:
-    image: posthog/posthog:${VERSION:-release-1.24.0}
+    image: posthog/posthog:${VERSION:-release-1.25.0}
     environment:
       - DATABASE_URL=postgres://posthog:myp@ssw0rd@postgres:5432/posthog
       - IS_DOCKER=true
