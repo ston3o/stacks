@@ -1,0 +1,84 @@
+# Set enable_registration=true manually
+# Set email manually
+
+version: '3.7'
+
+services:
+  web:
+    image: vectorim/riot-web:${VERSION:-v1.7.29}
+    command:
+      - /bin/sh
+      - -c
+      - |
+        sed -i -e 's#https://matrix-client.matrix.org#'$$SCHEME'://'$$DOMAIN'#g' /app/config.json
+        sed -i -e 's/matrix.org/'$$DOMAIN'/g' /app/config.json
+        sed -i -e 's/"breadcrumbs": true/"breadcrumbs": true,\n        "language": "'$$LANGUAGE'"/g' /app/config.json
+        nginx -g 'daemon off;'
+    environment:
+      - DOMAIN=${DOMAIN:-element.localhost}
+      - SCHEME=${SCHEME:-http}
+      - LANGUAGE=${LANGUAGE:-fr_FR}
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.element-${NUMBER:-1}.rule=Host(`${DOMAIN:-element.localhost}`)
+        - traefik.http.routers.element-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.element-${NUMBER:-1}.service=element-${NUMBER:-1}
+        - traefik.http.routers.element-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.element-${NUMBER:-1}.loadbalancer.server.port=80
+    networks:
+      - traefik
+      - internal
+
+  synapse:
+    image: matrixdotorg/synapse:v1.34.0
+    volumes:
+      - ${VOLUME_PATH}synapse:/data
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.element-synapse-${NUMBER:-1}.rule=Host(`${DOMAIN:-element.localhost}`) && PathPrefix(`/_matrix`)
+        - traefik.http.routers.element-synapse-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.element-synapse-${NUMBER:-1}.service=element-synapse-${NUMBER:-1}
+        - traefik.http.routers.element-synapse-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.element-synapse-${NUMBER:-1}.loadbalancer.server.port=8008
+    networks:
+      - traefik
+      - internal
+
+  synapse-init:
+    image: matrixdotorg/synapse:v1.34.0
+    command: generate
+    volumes:
+      - ${VOLUME_PATH}synapse:/data
+    environment:
+      - SYNAPSE_SERVER_NAME=${DOMAIN:-element.localhost}
+      - SYNAPSE_REPORT_STATS=no
+      - SYNAPSE_NO_TLS=yes
+    deploy:
+      restart_policy:
+        condition: on-failure
+    networks:
+      - internal
+
+  # dimension:
+    # image: turt2live/matrix-dimension
+    # user: root
+    # ports:
+      # - 8184:8184
+    # volumes:
+      # - dimension:/data
+    # networks:
+      # - internal
+
+volumes:
+  synapse:
+  # dimension:
+
+networks:
+  internal:
+    driver: overlay
+    attachable: true
+  traefik:
+    external: true
+    name: traefik-net
