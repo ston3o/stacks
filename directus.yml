@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   directus:
-    image: directus/directus:${VERSION:-v9.0.0-rc.61}
+    image: directus/directus:${VERSION:-v9.0.0-rc.73}
     environment:
       - KEY=${KEY:-255d861b-5ea1-5996-9aa3-922530ec40b1}
       - ACCESS_TOKEN_TTL=${ACCESS_TOKEN_TTL:-15m}
@@ -16,6 +16,7 @@ services:
       - DB_USER=directus
       - DB_PASSWORD=myp@ssw0rd
       - DB_CHARSET=utf8mb4
+      - DB_POOL_MIN=number:0
       - CACHE_ENABLED=true
       - CACHE_STORE=redis
       - CACHE_REDIS=redis://redis:6379
