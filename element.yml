@@ -1,6 +1,3 @@
-# Set enable_registration=true manually
-# Set email manually
-
 version: '3.7'
 
 services:
@@ -31,7 +28,17 @@ services:
       - internal
 
   synapse:
-    image: matrixdotorg/synapse:v1.34.0
+    image: matrixdotorg/synapse:v1.35.1
+    entrypoint: /bin/sh -c '/bin/sh -c "$${@}"'
+    command:
+      - /bin/sh
+      - -c
+      - |
+        sed -i -e 's/#enable_registration: false/enable_registration: '$$ENABLE_REGISTRATION'/g' /data/homeserver.yaml
+        sed -i -e 's/log_config:/#log_config:/g' /data/homeserver.yaml
+        /start.py
+    environment:
+      - ENABLE_REGISTRATION=${ENABLE_REGISTRATION:-true}
     volumes:
       - ${VOLUME_PATH}synapse:/data
     deploy:
@@ -47,7 +54,7 @@ services:
       - internal
 
   synapse-init:
-    image: matrixdotorg/synapse:v1.34.0
+    image: matrixdotorg/synapse:v1.35.1
     command: generate
     volumes:
       - ${VOLUME_PATH}synapse:/data
