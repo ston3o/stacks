@@ -2,9 +2,9 @@ version: "3.7"
 
 services:
   peertube:
-    image: chocobozzz/peertube:${VERSION:-v2.4.0-buster}
+    image: chocobozzz/peertube:${VERSION:-v3.2.1-buster}
     environment:
-      - PEERTUBE_DB_USERNAME=postgres
+      - PEERTUBE_DB_USERNAME=peertube
       - PEERTUBE_DB_PASSWORD=myp@ssw0rd
       - PEERTUBE_WEBSERVER_HOSTNAME=${DOMAIN:-peertube.localhost}
       - PEERTUBE_WEBSERVER_PORT=${PORT:-80}
@@ -34,11 +34,11 @@ services:
       - traefik
 
   postgres:
-    image: postgres:10-alpine
+    image: postgres:11.2-alpine
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=myp@ssw0rd
       - POSTGRES_DB=peertube
+      - POSTGRES_USER=peertube
+      - POSTGRES_PASSWORD=myp@ssw0rd
     volumes:
       - ${VOLUME_PATH}postgres:/var/lib/postgresql/data
     networks:
