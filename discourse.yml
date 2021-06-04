@@ -2,19 +2,14 @@ version: '3.7'
 
 x-defaults: &defaults
   environment:
-    - POSTGRESQL_HOST=postgresql
-    - POSTGRESQL_ROOT_USER=postgres
-    - POSTGRESQL_CLIENT_CREATE_DATABASE_NAME=discourse
-    - POSTGRESQL_CLIENT_CREATE_DATABASE_USERNAME=discourse
-    - POSTGRESQL_CLIENT_CREATE_DATABASE_PASSWORD=myp@ssw0rd
-    - DISCOURSE_POSTGRESQL_NAME=discourse
-    - DISCOURSE_POSTGRESQL_USERNAME=discourse
-    - DISCOURSE_POSTGRESQL_PASSWORD=myp@ssw0rd
-    - DISCOURSE_HOSTNAME=${DOMAIN:-discourse.localhost}
+    - DISCOURSE_DATABASE_HOST=postgres
+    - DISCOURSE_DATABASE_NAME=discourse
+    - DISCOURSE_DATABASE_USER=discourse
+    - DISCOURSE_DATABASE_PASSWORD=myp@ssw0rd
     - DISCOURSE_USERNAME=${ADMIN_USERNAME:-admin}
     - DISCOURSE_PASSWORD=${ADMIN_PASSWORD:-myp@ssw0rd}
     - DISCOURSE_EMAIL=${ADMIN_EMAIL:-admin@example.com}
-    - DISCOURSE_HOST=discourse
+    - DISCOURSE_HOST=${DOMAIN:-discourse.localhost}
     - DISCOURSE_PORT=3000
     - SMTP_HOST=${SMTP_HOST}
     - SMTP_PORT=${SMTP_PORT}
@@ -22,11 +17,12 @@ x-defaults: &defaults
     - SMTP_PASSWORD=${SMTP_PASSWORD}
     - SMTP_TLS=${SMTP_TLS:-yes}
     - SMTP_AUTH=${SMTP_AUTH:-login}
+    - ALLOW_EMPTY_PASSWORD=yes
 
 services:
   discourse:
     <<: *defaults
-    image: bitnami/discourse:${VERSION:-2.6.0}
+    image: bitnami/discourse:${VERSION:-2.7.0}
     volumes:
       - ${VOLUME_PATH}data:/bitnami
     deploy:
@@ -43,19 +39,21 @@ services:
 
   sidekiq:
     <<: *defaults
-    image: bitnami/discourse:${VERSION:-2.6.0}
-    command: nami start --foreground discourse-sidekiq
+    image: bitnami/discourse:${VERSION:-2.7.0}
+    command: /opt/bitnami/scripts/discourse-sidekiq/run.sh
     volumes:
       - ${VOLUME_PATH}sidekiq:/bitnami
     networks:
       - internal
 
-  postgresql:
-    image: bitnami/postgresql:11
+  postgres:
+    image: postgres:11.2-alpine
     environment:
-      - ALLOW_EMPTY_PASSWORD=yes
+      - POSTGRES_DB=discourse
+      - POSTGRES_USER=discourse
+      - POSTGRES_PASSWORD=myp@ssw0rd
     volumes:
-      - ${VOLUME_PATH}postgresql:/bitnami/postgresql
+      - ${VOLUME_PATH}postgres:/var/lib/postgresql/data
     networks:
       - internal
 
@@ -67,7 +65,7 @@ services:
       - internal
 
 volumes:
-  postgresql:
+  postgres:
   data:
   sidekiq:
 
