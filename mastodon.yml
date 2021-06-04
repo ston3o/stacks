@@ -1,3 +1,4 @@
+# tootctl media remove # Remove media cache
 # bundle exec rake secret # OTP_SECRET and SECRET_KEY_BASE
 # bundle exec rake mastodon:webpush:generate_vapid_key # VAPID_PRIVATE_KEY and VAPID_PUBLIC_KEY
 # tootctl accounts create <username> --email <email> --confirmed --role admin # Add user
@@ -12,7 +13,7 @@ x-defaults: &defaults
     - OTP_SECRET=${OTP_SECRET}
     - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY}
     - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
-    - DB_HOST=db
+    - DB_HOST=postgres
     - DB_PORT=5432
     - DB_NAME=mastodon
     - DB_USER=mastodon
@@ -29,32 +30,10 @@ x-defaults: &defaults
     - SMTP_FROM_ADDRESS=${SMTP_FROM_ADDRESS:-noreply@ethibox.fr}
 
 services:
-  db:
-    image: postgres:9.6-alpine
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres"]
-    environment:
-      - POSTGRES_DB=mastodon
-      - POSTGRES_USER=mastodon
-      - POSTGRES_PASSWORD=myp@ssw0rd
-    volumes:
-      - ${VOLUME_PATH}postgres:/var/lib/postgresql/data
-    networks:
-      - internal
-
-  redis:
-    image: redis:5.0-alpine
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-    volumes:
-      - ${VOLUME_PATH}redis:/data
-    networks:
-      - internal
-
   web:
     <<: *defaults
-    image: tootsuite/mastodon:${VERSION:-v3.2.0}
-    command: bash -c "chown -R 991:991 /mastodon/public/system; rm -f /mastodon/tmp/pids/server.pid; bundle exec rake db:migrate; bundle exec rake assets:precompile; bundle exec rails s -p 3000"
+    image: tootsuite/mastodon:${VERSION:-v3.4.1}
+    command: bash -c "chown -R 991:991 /mastodon/public/system; rm -f /mastodon/tmp/pids/server.pid; rails db:migrate; rails assets:precompile; rails s -p 3000"
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider --proxy=off localhost:3000/health || exit 1"]
     deploy:
@@ -78,7 +57,7 @@ services:
 
   streaming:
     <<: *defaults
-    image: tootsuite/mastodon:${VERSION:-v3.2.0}
+    image: tootsuite/mastodon:${VERSION:-v3.4.1}
     command: node ./streaming
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider --proxy=off localhost:4000/api/v1/streaming/health || exit 1"]
@@ -87,10 +66,32 @@ services:
 
   sidekiq:
     <<: *defaults
-    image: tootsuite/mastodon:${VERSION:-v3.2.0}
+    image: tootsuite/mastodon:${VERSION:-v3.4.1}
     command: bundle exec sidekiq
     volumes:
       - ${VOLUME_PATH}system:/mastodon/public/system
+    networks:
+      - internal
+
+  postgres:
+    image: postgres:9.6-alpine
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+    environment:
+      - POSTGRES_DB=mastodon
+      - POSTGRES_USER=mastodon
+      - POSTGRES_PASSWORD=myp@ssw0rd
+    volumes:
+      - ${VOLUME_PATH}postgres:/var/lib/postgresql/data
+    networks:
+      - internal
+
+  redis:
+    image: redis:5.0-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+    volumes:
+      - ${VOLUME_PATH}redis:/data
     networks:
       - internal
 
