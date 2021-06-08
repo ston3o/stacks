@@ -21,7 +21,7 @@ services:
         - traefik.http.routers.nextcloud-${NUMBER:-1}.entrypoints=${SCHEME:-http}
         - traefik.http.routers.nextcloud-${NUMBER:-1}.service=nextcloud-${NUMBER:-1}
         - traefik.http.routers.nextcloud-${NUMBER:-1}.tls.certresolver=letsencrypt
-        - traefik.http.routers.nextcloud-${NUMBER:-1}.middlewares=nextcloud-${NUMBER:-1},nextcloud-${NUMBER:-1}-redirect
+        - traefik.http.routers.nextcloud-${NUMBER:-1}.middlewares=nextcloud-${NUMBER:-1},nextcloud-${NUMBER:-1}-redirect,nextcloud-${NUMBER:-1}-redirect2
         - traefik.http.services.nextcloud-${NUMBER:-1}.loadbalancer.server.port=80
         - traefik.http.middlewares.nextcloud-${NUMBER:-1}.headers.customRequestHeaders.X-Forwarded-Proto=${SCHEME:-http}
         - traefik.http.middlewares.nextcloud-${NUMBER:-1}.headers.customResponseHeaders.Referrer-Policy=no-referrer
@@ -30,14 +30,14 @@ services:
         - traefik.http.middlewares.nextcloud-${NUMBER:-1}-redirect.redirectregex.regex=/.well-known/(card|cal)dav
         - traefik.http.middlewares.nextcloud-${NUMBER:-1}-redirect.redirectregex.replacement=/remote.php/dav/
         - traefik.http.middlewares.nextcloud-${NUMBER:-1}-redirect.redirectregex.permanent=true
-      placement:
-        constraints: [node.hostname==manager-prod-1]
+        - traefik.http.middlewares.nextcloud-${NUMBER:-1}-redirect2.replacepathregex.regex=^(/.well-known.*)
+        - traefik.http.middlewares.nextcloud-${NUMBER:-1}-redirect2.replacepathregex.replacement=/index.php$${1}
     networks:
       - internal
       - traefik
 
   app:
-    image: nextcloud:${VERSION:-20-fpm-alpine}
+    image: nextcloud:${VERSION:-21-fpm-alpine}
     command:
       - /bin/sh
       - -c
@@ -52,11 +52,6 @@ services:
         sudo -u www-data php occ --no-warnings background:cron
         mkdir -p config && wget -O config/custom.config.php https://github.com/johackim/stacks/raw/v2/configs/custom.config.php
 
-        # Onlyoffice
-        # sudo -u www-data php occ --no-warnings app:install onlyoffice
-        # sudo -u www-data php occ --no-warnings config:system:set allow_local_remote_servers --value=true
-
-        # collabora
         sudo -u www-data php occ --no-warnings app:install richdocuments
         sudo -u www-data php occ --no-warnings app:enable --force richdocuments
         sudo -u www-data php occ --no-warnings config:app:set richdocuments wopi_url --value="${SCHEME:-http}://${DOMAIN:-nextcloud.localhost}"
@@ -73,7 +68,7 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-myp@ssw0rd}
       - NEXTCLOUD_UPDATE=${NEXTCLOUD_UPDATE:-1}
       - FORCE_LANGUAGE=${FORCE_LANGUAGE:-fr}
-      - ENABLE_S3=${ENABLE_S3:-false}
+      - ENABLE_S3=${ENABLE_S3:-true}
       - S3_BUCKET=${S3_BUCKET}
       - S3_KEY=${S3_KEY}
       - S3_SECRET=${S3_SECRET}
@@ -84,9 +79,8 @@ services:
       - S3_AUTOCREATE=${S3_AUTOCREATE:-true}
       - S3_USE_PATH_STYLE=${S3_USE_PATH_STYLE:-true}
       - S3_OBJECT_PREFIX=${S3_OBJECT_PREFIX:-urn:oid:}
-    deploy:
-      placement:
-        constraints: [node.hostname==manager-prod-1]
+      - REDIS_HOST=redis
+      - REDIS_HOST_PASSWORD=myp@ssw0rd
     volumes:
       - ${VOLUME_PATH}nextcloud:/var/www/html:cached
     networks:
@@ -100,13 +94,29 @@ services:
       - MYSQL_USER=${MYSQL_USER:-nextcloud}
       - MYSQL_DATABASE=${MYSQL_DATABASE:-nextcloud}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-myp@ssw0rd}
-    deploy:
-      placement:
-        constraints: [node.hostname==manager-prod-1]
     volumes:
       - ${VOLUME_PATH}mariadb:/var/lib/mysql
     networks:
       - internal
+
+  redis:
+    image: redis:alpine
+    environment:
+      - REDIS_HOST_PASSWORD=myp@ssw0rd
+    command: /bin/sh -c 'redis-server --requirepass $$REDIS_HOST_PASSWORD'
+    networks:
+      - internal
+
+  # collabora:
+    # image: collabora/code:6.4.9.2
+    # environment:
+      # - extra_params=--o:ssl.enable=false --o:ssl.termination=true
+      # - SLEEPFORDEBUGGER=0
+      # - domain=${DOMAIN:-nextcloud.localhost}
+      # - username=${NEXTCLOUD_ADMIN_USER:-admin}
+      # - password=${NEXTCLOUD_ADMIN_PASSWORD:-myp@ssw0rd}
+    # networks:
+      # - internal
 
 volumes:
   nextcloud:
