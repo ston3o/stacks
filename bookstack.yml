@@ -1,0 +1,49 @@
+# admin@admin.com:password
+
+version: '3.7'
+
+services:
+  app:
+    image: ghcr.io/linuxserver/bookstack:${VERSION:-latest}
+    environment:
+      - APP_URL=${SCHEME:-http}://${DOMAIN}
+      - DB_CONNECTION=mysql
+      - DB_HOST=mariadb
+      - DB_PORT=3306
+      - DB_DATABASE=bookstack
+      - DB_USERNAME=bookstack
+      - DB_PASSWORD=myp@ssw0rd
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.bookstack-${NUMBER:-1}.rule=Host(`${DOMAIN:-bookstack.localhost}`)
+        - traefik.http.routers.bookstack-${NUMBER:-1}.entrypoints=${SCHEME:-http}
+        - traefik.http.routers.bookstack-${NUMBER:-1}.service=bookstack-${NUMBER:-1}
+        - traefik.http.routers.bookstack-${NUMBER:-1}.tls.certresolver=letsencrypt
+        - traefik.http.services.bookstack-${NUMBER:-1}.loadbalancer.server.port=80
+    networks:
+      - internal
+      - traefik
+
+  mariadb:
+    image: mariadb:10.3.14
+    volumes:
+      - ${VOLUME_PATH}mariadb:/var/lib/mysql:cached
+    environment:
+      - MYSQL_ROOT_PASSWORD=myp@ssw0rd
+      - MYSQL_DATABASE=bookstack
+      - MYSQL_USER=bookstack
+      - MYSQL_PASSWORD=myp@ssw0rd
+    networks:
+      - internal
+
+volumes:
+  mariadb:
+
+networks:
+  internal:
+    driver: overlay
+    attachable: true
+  traefik:
+    external: true
+    name: traefik-net
