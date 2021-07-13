@@ -1,5 +1,6 @@
 # To rename mattermost user:
 # ./bin/mattermost --config="postgres://mattermost:myp@ssw0rd@postgres:5432/mattermost?sslmode=disable" team rename mattermost <newname>
+# ./bin/mattermost --config="postgres://mattermost:myp@ssw0rd@postgres:5432/mattermost?sslmode=disable" user create --firstname user --system_admin --email contact@example.org --username user --password "password"
 
 version: "3.7"
 
@@ -16,16 +17,13 @@ services:
         condition: on-failure
 
   app:
-    image: mattermost/mattermost-prod-app:${VERSION:-5.30.2}
+    image: mattermost/mattermost-team-edition:${VERSION:-release-5.37}
     volumes:
       - ${VOLUME_PATH}data:/mattermost/data
       - ${VOLUME_PATH}config:/mattermost/config
       - ${VOLUME_PATH}plugins:/mattermost/plugins
     environment:
-      - MM_USERNAME=mattermost
-      - MM_PASSWORD=myp@ssw0rd
-      - DB_HOST=postgres
-      - MM_DBNAME=mattermost
+      - MM_SQLSETTINGS_DATASOURCE=postgres://mattermost:myp@ssw0rd@postgres:5432/mattermost?sslmode=disable&connect_timeout=10
       - MM_SERVICESETTINGS_SITEURL=${SCHEME:-http}://${DOMAIN:-mattermost.localhost}
       - MM_LOCALIZATIONSETTINGS_DEFAULTCLIENTLOCALE=${LOCALE:-fr}
       - MM_LOCALIZATIONSETTINGS_AVAILABLELOCALES=${LOCALE:-fr}
@@ -41,7 +39,10 @@ services:
       - internal
 
   web:
-    image: mattermost/mattermost-prod-web:${VERSION:-5.30.2}
+    image: mattermost/mattermost-prod-web:${VERSION:-latest}
+    environment:
+      - APP_PORT_NUMBER=8065
+      - APP_HOST={{ index .Service.Labels "com.docker.stack.namespace" }}_app
     deploy:
       labels:
         - traefik.enable=true
@@ -49,19 +50,21 @@ services:
         - traefik.http.routers.mattermost-${NUMBER:-1}.entrypoints=${SCHEME:-http}
         - traefik.http.routers.mattermost-${NUMBER:-1}.service=mattermost-${NUMBER:-1}
         - traefik.http.routers.mattermost-${NUMBER:-1}.tls.certresolver=letsencrypt
-        - traefik.http.services.mattermost-${NUMBER:-1}.loadbalancer.server.port=80
+        - traefik.http.services.mattermost-${NUMBER:-1}.loadbalancer.server.port=8080
     networks:
       - internal
       - traefik
 
   postgres:
-    image: mattermost/mattermost-prod-db:${VERSION:-5.30.2}
-    volumes:
-      - ${VOLUME_PATH}db:/var/lib/postgresql/data
+    image: postgres:11.2-alpine
     environment:
-      - POSTGRES_USER=mattermost
-      - POSTGRES_PASSWORD=myp@ssw0rd
-      - POSTGRES_DB=mattermost
+      POSTGRES_DB: mattermost
+      POSTGRES_USER: mattermost
+      POSTGRES_PASSWORD: myp@ssw0rd
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "mattermost"]
+    volumes:
+      - ${VOLUME_PATH}postgres:/var/lib/postgresql/data
     networks:
       - internal
 
@@ -69,7 +72,7 @@ volumes:
   data:
   config:
   plugins:
-  db:
+  postgres:
 
 networks:
   internal:
